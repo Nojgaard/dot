@@ -6,6 +6,7 @@ from dm_control import composer
 from dm_control.composer.observation import observable
 from dm_control import mjcf
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 
 class Quadruped(Entity):
@@ -83,3 +84,29 @@ class QuadrupedObservables(Observables):
     def joint_velocities(self):
         all_joints = self._entity.mjcf_model.find_all("joint")
         return observable.MJCFFeature("qvel", all_joints)
+
+    @composer.observable
+    def sensors_gyro(self):
+        return observable.MJCFFeature("sensordata", self._entity.mjcf_model.sensor.gyro)
+
+    @composer.observable
+    def sensors_accelerometer(self):
+        return observable.MJCFFeature(
+            "sensordata", self._entity.mjcf_model.sensor.accelerometer
+        )
+
+    @composer.observable
+    def sensors_orientation(self):
+        def read_orientation(physics):
+            framequat_element = self._entity.mjcf_model.sensor.framequat
+            binding = physics.bind(framequat_element)
+            framequat = getattr(binding, "sensordata")
+            rotation: Rotation = Rotation.from_quat(framequat)
+            return rotation.as_euler("ZYX", degrees=False)
+        return observable.Generic(read_orientation)
+
+    @composer.observable
+    def sensors_framequat(self):
+        return observable.MJCFFeature(
+            "sensordata", self._entity.mjcf_model.sensor.framequat
+        )

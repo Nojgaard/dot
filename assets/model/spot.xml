@@ -29,6 +29,7 @@
         mesh="frontpart" mass="0.05" />
       <geom pos="-0.04 -0.06 -0.014" type="mesh" rgba="0.92 0.83 0 1" mesh="backpart"
         mass="0.05" />
+      <site name="imu" pos="0 0 0" />
         
       <body name="front_left_shoulder_link" pos="-0.093 -0.036 0">
         <joint name="motor_front_left_shoulder" pos="0 0 0" axis="1 0 0" range="-1 1"
@@ -116,4 +117,9 @@
     <exclude body1="base" body2="rear_left_leg_link" />
     <exclude body1="base" body2="rear_right_leg_link" />
   </contact>
+  <sensor>
+    <framequat name="imu_quat" objtype="site" objname="imu" />
+    <gyro name="imu_gyro" site="imu" />
+    <accelerometer name="imu_acc" site="imu" />
+  </sensor>
 </mujoco>

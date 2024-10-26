@@ -8,6 +8,8 @@ from dm_control.mujoco import Physics
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
 from dot.sim.quadruped import Quadruped
+from scipy.spatial.transform import Rotation
+import numpy as np
 
 
 class ModulateGaitTask(Task):
@@ -32,6 +34,9 @@ class ModulateGaitTask(Task):
         #self._spot.observables.joint_velocities.corruptor = vel_corruptor
         #self._spot.observables.joint_velocities.enabled = True
 
+        self.model.observables.sensors_framequat.enabled = True
+        #self.model.observables.sensors_gyro.enabled = True
+        self.model.observables.sensors_orientation.enabled = True
         self._task_observables = {}
     
     @property
@@ -52,7 +57,7 @@ class ModulateGaitTask(Task):
         super().before_step(physics, joint_angles.flatten(), random_state)
     
     def initialize_episode(self, physics: Physics, random_state):
-        self.model.set_pose(physics, self._creature_initial_pose)
+        self.model.set_pose(physics, self._creature_initial_pose, np.array([0, 0, 0, 1]))
         joint_names = [j.name for j in self.model.mjcf_model.find_all("joint")]
         for name, angle in zip(joint_names, self._rest_joint_angles):
            physics.named.data.qpos[f"spot/{name}"] = angle
