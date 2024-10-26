@@ -1,8 +1,9 @@
+import math
 from dataclasses import dataclass
 from itertools import product
+
 import numpy as np
 from numpy.typing import NDArray
-import math
 from scipy.spatial.transform import Rotation
 
 
@@ -92,4 +93,4 @@ class QuadropedIK:
             self.leg_ik.find_angles(htf, isleft)
             for htf, isleft in zip(hip_to_foot_vecs, self.isleft)
         ]
-        return joint_angles
+        return np.array(joint_angles)
