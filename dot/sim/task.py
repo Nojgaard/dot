@@ -7,10 +7,11 @@ from dm_control.composer.observation import observable
 from dm_control.composer.variation import distributions
 from dm_control.composer.variation import noises
 
-from dot.sim import quadruped
+from dot.sim.quadruped import Quadruped
 
-class WalkTask(Task):
-    def __init__(self, model: quadruped.Quadruped, initial_angles) -> None:
+
+class ModulateGaitTask(Task):
+    def __init__(self, model: Quadruped, initial_angles) -> None:
         self._model = model
         self._initial_angles = initial_angles
 
@@ -18,7 +19,6 @@ class WalkTask(Task):
         self._creature_initial_pose = (0, 0, 0.26)
         self._arena.add_free_entity(self._model)
         #self._arena.mjcf_model.worldbody.add('light', pos=(0, 0, 4))
-        #self._arena.mjcf_model.option.timestep = "0.005"
         self.set_timesteps(control_timestep=0.03, physics_timestep=0.005)
 
         # Configure and enable observables

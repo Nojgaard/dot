@@ -13,7 +13,7 @@ import mujoco.viewer as mv
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
 from dot.sim.quadruped import Quadruped
-from dot.sim.task import WalkTask
+from dot.sim.task import ModulateGaitTask
 import mujoco
 from multiprocessing import Process
 import time
@@ -22,14 +22,6 @@ import sys
 from scipy.spatial.transform import Rotation
 
 from dot.view.control_gui import ControlGui
-
-
-def update_gait(model_gait: Gait, gui: ControlGui):
-    model_gait.step_length = gui.step_length
-    model_gait.lateral_rotation_angle = gui.lateral_angle
-    model_gait.yaw_rate = gui.yaw_rate
-    model_gait.clearance_height = gui.clearance_height
-    model_gait.penetration_depth = gui.penetration_depth
 
 
 def main():
@@ -46,8 +38,8 @@ def main():
         spot.wrist_length,
     )
     model_gait = Gait(model_ik.foot_points)
-    initial_angles = model_ik.find_angles(Rotation.identity(), np.zeros((1, 3)))
-    task = WalkTask(spot, np.array(initial_angles).flatten())
+    initial_angles = model_ik.find_angles()
+    task = ModulateGaitTask(spot, np.array(initial_angles).flatten())
     env = composer.Environment(task, random_state=np.random.RandomState(42))
     env.reset()
 
@@ -57,11 +49,9 @@ def main():
     # print(action_spec)
     # Define a uniform random policy.
     def random_policy(time_step):
-        update_gait(model_gait, gui)
+        gui.update_model(model_ik, model_gait)
         foot_positions = model_gait.compute_foot_positions(task.control_timestep)
-        angles = model_ik.find_angles(
-            gui.crtl_rotation, gui.ctrl_translation, foot_positions
-        )
+        angles = model_ik.find_angles(foot_positions)
         return np.array(angles).flatten()
 
     gui.launch()

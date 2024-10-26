@@ -40,8 +40,9 @@ def main():
         pts = np.concatenate([body_points, foot_points])
         xs, ys, zs = pts[:, 0], pts[:, 1], pts[:, 2]
 
-        for pt1, pt2 in zip(foot_points, body_points):
-            ax.plot([pt1[0], pt1[0], pt2[0]], [pt1[1], pt2[1], pt2[1]], [pt1[2], pt1[2], pt2[2]], color='b')
+        colors = ("r", "b", "b", "b")
+        for pt1, pt2, c in zip(foot_points, body_points, colors):
+            ax.plot([pt1[0], pt1[0], pt2[0]], [pt1[1], pt2[1], pt2[1]], [pt1[2], pt1[2], pt2[2]], color=c)
         return ax.scatter(xs, ys, zs)
 
     anim = animation.FuncAnimation(fig=fig, func=update, interval = 30, cache_frame_data=False) 

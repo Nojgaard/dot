@@ -19,7 +19,6 @@ class LegIK:
             y = -y
         upper, lower = self.shoulder_length, self.wrist_length
 
-
         h1 = math.sqrt(off0**2 + off1**2)
         h2 = math.sqrt(z**2 + y**2)
         alpha_0 = math.atan(y / z)
@@ -36,10 +35,14 @@ class LegIK:
         r0 = h1 * math.sin(alpha_4) / math.sin(alpha_3)
         h = math.sqrt(r0**2 + x**2)
         phi = math.asin(x / h)
-        theta_s = -math.acos(np.clip((h**2 + upper**2 - lower**2) / (2 * h * upper), -1, 1)) - phi
-        #TODO: Figure out if this should be negative
-        theta_w = math.acos(np.clip(-(lower**2 + upper**2 - h**2) / (2 * lower * upper), -1, 1))
-        
+        theta_s = (
+            -math.acos(np.clip((h**2 + upper**2 - lower**2) / (2 * h * upper), -1, 1))
+            - phi
+        )
+        # TODO: Figure out if this should be negative
+        theta_w = math.acos(
+            np.clip(-(lower**2 + upper**2 - h**2) / (2 * lower * upper), -1, 1)
+        )
 
         return theta_h, theta_s, theta_w
 
@@ -53,12 +56,11 @@ class QuadropedIK:
         hip_offset: tuple[float, float],
         shoulder_length: float,
         wrist_length: float,
+        rotation: Rotation = Rotation.identity(),
+        translation: NDArray[np.floating] = np.zeros((1, 3)),
     ) -> None:
         self.body_points = np.array(
-            [
-                [x * length / 2, y * width / 2, 0]
-                for x, y in product([-1, 1], [-1, 1])
-            ]
+            [[x * length / 2, y * width / 2, 0] for x, y in product([-1, 1], [-1, 1])]
         )
 
         self.foot_points = np.array(
@@ -71,16 +73,23 @@ class QuadropedIK:
         self.isleft = [True, False, True, False]
 
         self.leg_ik = LegIK(hip_offset, shoulder_length, wrist_length)
+        self.rotation = rotation
+        self.translation = translation
 
-
-    def find_angles(self, rotation: Rotation, translation: NDArray[np.float64], foot_points: NDArray = None):
+    def find_angles(
+        self,
+        foot_points: NDArray = None,
+    ):
         if foot_points is None:
             foot_points = self.foot_points
 
         body_points = self.body_points
-        #body_points = rotation.apply(self.body_points) + translation
-        foot_points = rotation.apply(foot_points) + translation
-        #foot_points = self.foot_points
+        # body_points = rotation.apply(self.body_points) + translation
+        foot_points = self.rotation.apply(foot_points) + self.translation
+        # foot_points = self.foot_points
         hip_to_foot_vecs = foot_points - body_points
-        joint_angles = [self.leg_ik.find_angles(htf, isleft) for htf, isleft in zip(hip_to_foot_vecs, self.isleft)]
+        joint_angles = [
+            self.leg_ik.find_angles(htf, isleft)
+            for htf, isleft in zip(hip_to_foot_vecs, self.isleft)
+        ]
         return joint_angles

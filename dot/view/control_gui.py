@@ -4,6 +4,8 @@ import dearpygui.dearpygui as dpg
 import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
+from dot.control.gait import Gait
+from dot.control.inverse_kinematics import QuadropedIK
 
 
 def _update_value(sender, data, user_data):
@@ -138,3 +140,14 @@ class ControlGui:
 
     def launch(self):
         self._process.start()
+
+    def update_model(self, model_ik: QuadropedIK, model_gait: Gait):
+        model_ik.translation = self.ctrl_translation
+        model_ik.rotation = self.crtl_rotation
+
+        model_gait.step_length = self.step_length
+        model_gait.lateral_rotation_angle = self.lateral_angle
+        model_gait.yaw_rate = self.yaw_rate
+        model_gait.clearance_height = self.clearance_height
+        model_gait.penetration_depth = self.penetration_depth
+
