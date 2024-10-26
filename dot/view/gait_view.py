@@ -4,10 +4,10 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spot.control.gait import Gait
-from spot.control.inverse_kinematics import QuadropedIK
-from spot.sim.spot import Spot
-from spot.view.control_gui import ControlGui
+from dot.control.gait import Gait
+from dot.control.inverse_kinematics import QuadropedIK
+from dot.sim.quadruped import Quadruped
+from dot.view.control_gui import ControlGui
 import time
 
 def update_leg_line_plots(model_gait: Gait, leg_line_plots: list[list[Any]]):
@@ -37,7 +37,7 @@ def update_gait(model_gait: Gait, gui: ControlGui):
     model_gait.penetration_depth = gui.penetration_depth
 
 def main():
-    model = Spot()
+    model = Quadruped()
 
     model_ik = QuadropedIK(
         model.body_length,

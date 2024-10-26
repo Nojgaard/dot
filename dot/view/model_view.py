@@ -1,10 +1,10 @@
-from spot.sim.spot import Spot
+from dot.sim.quadruped import Quadruped
 import dm_control.mjcf as mjcf
 from dm_control.composer.arena import Arena
 import mujoco.viewer as mjv
 
 
-spot = Spot()
+spot = Quadruped()
 arena = Arena()
 arena.add_free_entity(spot)
 arena.mjcf_model.option.timestep = "0.005"

@@ -7,7 +7,7 @@ from dm_control import mjcf
 import numpy as np
 
 
-class Spot(Entity):
+class Quadruped(Entity):
     def _build(self):
         #self._model = mjcf.from_path(r"assets\model\xml\spot_mini\spot_mini.xml")
         self._model = mjcf.from_path(r"assets\model\spot.xml")
@@ -20,10 +20,10 @@ class Spot(Entity):
             self._model.actuator.add('position', name=joint.name, joint=joint, kp=15, kv=1)
 
     def _build_observables(self):
-        return SpotObservables(self)
+        return QuadrupedObservables(self)
     
     @property
-    def observables(self) -> "SpotObservables":
+    def observables(self) -> "QuadrupedObservables":
         return self._observables
 
     @property
@@ -66,7 +66,7 @@ class Spot(Entity):
         return tuple(self._model.find_all("actuator"))
 
 
-class SpotObservables(Observables):
+class QuadrupedObservables(Observables):
     @composer.observable
     def joint_positions(self):
         all_joints = self._entity.mjcf_model.find_all("joint")

@@ -7,10 +7,10 @@ from dm_control.composer.observation import observable
 from dm_control.composer.variation import distributions
 from dm_control.composer.variation import noises
 
-from spot.sim import spot
+from dot.sim import quadruped
 
 class WalkTask(Task):
-    def __init__(self, model: spot.Spot, initial_angles) -> None:
+    def __init__(self, model: quadruped.Quadruped, initial_angles) -> None:
         self._model = model
         self._initial_angles = initial_angles
 

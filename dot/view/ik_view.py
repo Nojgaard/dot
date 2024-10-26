@@ -3,15 +3,15 @@ from matplotlib import animation
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spot.control.inverse_kinematics import QuadropedIK
-from spot.sim.spot import Spot
-from spot.view.control_gui import ControlGui
+from dot.control.inverse_kinematics import QuadropedIK
+from dot.sim.quadruped import Quadruped
+from dot.view.control_gui import ControlGui
 
 
 def main():
     gui = ControlGui()
 
-    spot = Spot()
+    spot = Quadruped()
     ik_model = QuadropedIK(
         spot.body_length,
         spot.body_width,

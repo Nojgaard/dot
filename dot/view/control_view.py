@@ -8,13 +8,12 @@ import numpy as np
 import sys
 import os
 import dm_control
-print(sys.path)
 
 import mujoco.viewer as mv
-from spot.control.gait import Gait
-from spot.control.inverse_kinematics import QuadropedIK
-from spot.sim.spot import Spot
-from spot.sim.task import WalkTask
+from dot.control.gait import Gait
+from dot.control.inverse_kinematics import QuadropedIK
+from dot.sim.quadruped import Quadruped
+from dot.sim.task import WalkTask
 import mujoco
 from multiprocessing import Process
 import time
@@ -22,7 +21,7 @@ import dearpygui.dearpygui as dpg
 import sys
 from scipy.spatial.transform import Rotation
 
-from spot.view.control_gui import ControlGui
+from dot.view.control_gui import ControlGui
 
 
 def update_gait(model_gait: Gait, gui: ControlGui):
@@ -37,7 +36,7 @@ def main():
 
     gui = ControlGui()
 
-    spot = Spot()
+    spot = Quadruped()
     model_ik = QuadropedIK(
         spot.body_length,
         spot.body_width,
