@@ -5,7 +5,7 @@ from dm_control import composer
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
 from dot.sim.quadruped import Quadruped
-from dot.sim.task import ModulateGaitTask
+from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.view.control_gui import ControlGui
 
 
