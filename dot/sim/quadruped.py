@@ -8,6 +8,8 @@ from dm_control import mjcf
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from dot.sim.rotation import quat_to_euler
+
 
 class Quadruped(Entity):
     def _build(self):
@@ -30,14 +32,6 @@ class Quadruped(Entity):
 
     def _build_observables(self):
         return QuadrupedObservables(self)
-
-    def position(self, physics: Physics):
-        return np.array(physics.bind(self._imu).xpos)
-    
-    def orientation(self, physics: Physics):
-        xmat = physics.bind(self._imu).xmat.reshape((3, 3))
-        rotation = Rotation.from_matrix(xmat)
-        return rotation.as_euler("XYZ")
     
     def angular_velocity(self, physics: Physics):
         return np.array(physics.bind(self.mjcf_model.sensor.gyro).sensordata)
@@ -98,23 +92,22 @@ class QuadrupedObservables(Observables):
         return observable.MJCFFeature("qvel", all_joints)
 
     @composer.observable
-    def sensors_gyro(self):
-        return observable.MJCFFeature("sensordata", self._entity.mjcf_model.sensor.gyro)
+    def attitude_velocity(self):
+        return observable.MJCFFeature("sensordata", self._entity.mjcf_model.sensor.gyro, index=[0, 1])
 
     @composer.observable
-    def sensors_accelerometer(self):
+    def accelerometer(self):
         return observable.MJCFFeature(
             "sensordata", self._entity.mjcf_model.sensor.accelerometer
         )
 
     @composer.observable
-    def sensors_orientation(self):
+    def attitude(self):
         def read_orientation(physics):
             framequat_element = self._entity.mjcf_model.sensor.framequat
-            binding = physics.bind(framequat_element)
-            framequat = getattr(binding, "sensordata")
-            rotation: Rotation = Rotation.from_quat(framequat)
-            return rotation.as_euler("ZYX", degrees=False)
+            quat = physics.bind(framequat_element).sensordata
+            return quat_to_euler(quat)[:2]
+
         return observable.Generic(read_orientation)
 
     @composer.observable
