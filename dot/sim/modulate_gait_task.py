@@ -4,6 +4,7 @@ from dm_control.composer.observation import observable
 from dm_control.composer.variation import distributions, noises
 from dm_control.locomotion.arenas import floors
 from dm_control.mujoco import Physics
+import dm_env.specs
 
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
@@ -61,12 +62,36 @@ class ModulateGaitTask(Task):
         return self._task_observables
 
     def action_spec(self, physics):
-        return super().action_spec(physics)
+        action_shape = (14,)
+        curve_z_offset_range = (0, 0.15)
+        foot_bias_range = (-0.2, 0.2)
+
+        minimum = np.zeros(action_shape)
+        minimum[:2] = curve_z_offset_range[0]
+        minimum[2:] = foot_bias_range[0]
+
+        maximum = np.zeros(action_shape)
+        maximum[:2] = curve_z_offset_range[1]
+        maximum[2:] = foot_bias_range[1]
+
+        return dm_env.specs.BoundedArray(
+            shape=action_shape, 
+            dtype=np.float64, 
+            minimum=minimum,
+            maximum=maximum,
+            name="modulate_gait"
+        )
 
     def before_step(self, physics, action, random_state):
+        self.model_gait.penetration_depth = action[0]
+        self.model_gait.clearance_height = action[1]
+
+        foot_bias = action[2:].reshape((4, 3))
+
         dt = self.control_timestep
         foot_positions = self.model_gait.compute_foot_positions(dt)
-        print(f"TIME2 {self.model_gait._time}")
+        foot_positions += foot_bias
+
         joint_angles = self.model_ik.find_angles(foot_positions)
         super().before_step(physics, joint_angles.flatten(), random_state)
 

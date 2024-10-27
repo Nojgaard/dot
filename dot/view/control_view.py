@@ -7,7 +7,7 @@ from dot.control.inverse_kinematics import QuadropedIK
 from dot.sim.quadruped import Quadruped
 from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.view.control_gui import ControlGui
-
+from scipy.spatial.transform import Rotation
 
 def main():
 
@@ -33,7 +33,12 @@ def main():
     # print(action_spec)
     def update_gui(time_step):
         gui.update_model(model_ik, model_gait)
-        return np.zeros(action_spec.shape)
+        action = np.zeros(action_spec.shape)
+        action[0] = gui.penetration_depth
+        action[1] = gui.clearance_height
+        #print(time_step.observation)
+        #print(f"TIME {model_gait._time}")
+        return action
 
     gui.launch()
     viewer.launch(env, update_gui)
