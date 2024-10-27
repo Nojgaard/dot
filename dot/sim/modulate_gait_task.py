@@ -57,7 +57,7 @@ class ModulateGaitTask(Task):
         super().before_step(physics, joint_angles.flatten(), random_state)
     
     def initialize_episode(self, physics: Physics, random_state):
-        self.model.set_pose(physics, self._creature_initial_pose, np.array([0, 0, 0, 1]))
+        self.model.set_pose(physics, self._creature_initial_pose, np.array([1, 0, 0, 0]))
         joint_names = [j.name for j in self.model.mjcf_model.find_all("joint")]
         for name, angle in zip(joint_names, self._rest_joint_angles):
            physics.named.data.qpos[f"spot/{name}"] = angle

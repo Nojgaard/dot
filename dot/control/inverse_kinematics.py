@@ -16,7 +16,7 @@ class LegIK:
     def find_angles(self, hip_to_foot_vec: NDArray[np.float64], isleft: bool):
         x, y, z = hip_to_foot_vec
         off0, off1 = self.hip_offset
-        if not isleft:
+        if isleft:
             y = -y
         upper, lower = self.shoulder_length, self.wrist_length
 
@@ -30,18 +30,18 @@ class LegIK:
         alpha_5 = alpha_1 - alpha_4
         theta_h = alpha_0 - alpha_5
 
-        if isleft:
+        if not isleft:
             theta_h *= -1
 
         r0 = h1 * math.sin(alpha_4) / math.sin(alpha_3)
         h = math.sqrt(r0**2 + x**2)
         phi = math.asin(x / h)
         theta_s = (
-            -math.acos(np.clip((h**2 + upper**2 - lower**2) / (2 * h * upper), -1, 1))
+            math.acos(np.clip((h**2 + upper**2 - lower**2) / (2 * h * upper), -1, 1))
             - phi
         )
         # TODO: Figure out if this should be negative
-        theta_w = math.acos(
+        theta_w = -math.acos(
             np.clip(-(lower**2 + upper**2 - h**2) / (2 * lower * upper), -1, 1)
         )
 
@@ -61,13 +61,13 @@ class QuadropedIK:
         translation: NDArray[np.floating] = np.zeros((1, 3)),
     ) -> None:
         self.body_points = np.array(
-            [[x * length / 2, y * width / 2, 0] for x, y in product([-1, 1], [-1, 1])]
+            [[x * length / 2, y * width / 2, 0] for x, y in product([1, -1], [1, -1])]
         )
 
         self.foot_points = np.array(
             [
                 [x * length / 2, y * (width / 2 + hip_offset[1]), -height]
-                for x, y in product([-1, 1], [-1, 1])
+                for x, y in product([1, -1], [1, -1])
             ]
         )
 
@@ -93,4 +93,5 @@ class QuadropedIK:
             self.leg_ik.find_angles(htf, isleft)
             for htf, isleft in zip(hip_to_foot_vecs, self.isleft)
         ]
+
         return np.array(joint_angles)
