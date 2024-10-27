@@ -13,6 +13,7 @@ class Quadruped(Entity):
     def _build(self):
         # self._model = mjcf.from_path(r"assets\model\xml\spot_mini\spot_mini.xml")
         self._model = mjcf.from_path(r"assets\model\spot.xml")
+        self._imu = self._model.find("site", "imu")
 
         for joint in self._model.find_all("joint"):
             if joint.type == "free":
@@ -29,6 +30,17 @@ class Quadruped(Entity):
 
     def _build_observables(self):
         return QuadrupedObservables(self)
+
+    def position(self, physics: Physics):
+        return np.array(physics.bind(self._imu).xpos)
+    
+    def orientation(self, physics: Physics):
+        xmat = physics.bind(self._imu).xmat.reshape((3, 3))
+        rotation = Rotation.from_matrix(xmat)
+        return rotation.as_euler("XYZ")
+    
+    def angular_velocity(self, physics: Physics):
+        return np.array(physics.bind(self.mjcf_model.sensor.gyro).sensordata)
 
     @property
     def observables(self) -> "QuadrupedObservables":

@@ -10,6 +10,7 @@ from dot.control.inverse_kinematics import QuadropedIK
 from dot.sim.quadruped import Quadruped
 from scipy.spatial.transform import Rotation
 import numpy as np
+from numpy.typing import NDArray
 
 
 class ModulateGaitTask(Task):
@@ -38,6 +39,7 @@ class ModulateGaitTask(Task):
         #self.model.observables.sensors_gyro.enabled = True
         self.model.observables.sensors_orientation.enabled = True
         self._task_observables = {}
+        self._last_position: NDArray = np.zeros(3)
     
     @property
     def root_entity(self):
@@ -62,8 +64,25 @@ class ModulateGaitTask(Task):
         for name, angle in zip(joint_names, self._rest_joint_angles):
            physics.named.data.qpos[f"spot/{name}"] = angle
 
+        self._last_position = self.model.position(physics)
+
     
-    def get_reward(self, physics) -> float:
-        return 0
+    def get_reward(self, physics: Physics) -> float:
+        position = self.model.position(physics)
+        orientation = self.model.orientation(physics)
+        angular_velocity = self.model.angular_velocity(physics)
+        dpos = position - self._last_position
+
+        distance_weight = 1.0
+        drift_weight = 2.0
+        orientation_weight = 5.0
+        angular_velocity_weight = 0.05
+
+        reward = distance_weight * dpos[0]
+        reward -= drift_weight * position[1]
+        reward -= orientation_weight * np.sum(np.abs(orientation[:2]))
+        reward -= angular_velocity_weight * np.sum(np.abs(angular_velocity[:2]))
+        self._last_position = position
+        return reward
 
         
