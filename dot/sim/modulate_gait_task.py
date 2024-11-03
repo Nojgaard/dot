@@ -13,6 +13,7 @@ from scipy.spatial.transform import Rotation
 import numpy as np
 from numpy.typing import NDArray
 
+import math
 from dot.sim.rotation import quat_to_euler
 
 
@@ -27,7 +28,7 @@ class ModulateGaitTask(Task):
         self._rest_joint_angles = model_ik.find_angles().flatten()
 
         self._arena = floors.Floor(reflectance=0.0)
-        self._creature_initial_pose = (0, 0, 0.26)
+        self._creature_initial_pose = (0, 0, 0.19)
         self._arena.add_free_entity(self.model)
         # self._arena.mjcf_model.worldbody.add('light', pos=(0, 0, 4))
         self.set_timesteps(control_timestep=0.03, physics_timestep=0.005)
@@ -63,8 +64,9 @@ class ModulateGaitTask(Task):
 
     def action_spec(self, physics):
         action_shape = (14,)
-        curve_z_offset_range = (0, 0.15)
-        foot_bias_range = (-0.2, 0.2)
+        #curve_z_offset_range = (0, 0.15)
+        curve_z_offset_range = (0, 0.1)
+        foot_bias_range = (-0.1, 0.1)
 
         minimum = np.zeros(action_shape)
         minimum[:2] = curve_z_offset_range[0]
@@ -108,17 +110,32 @@ class ModulateGaitTask(Task):
     def get_reward(self, physics: Physics) -> float:
         position, quat = self.model.get_pose(physics)
         orientation = quat_to_euler(quat)
-        _, angular_velocity = self.model.get_velocity(physics)
-        dpos = position - self._last_position
+        linear_velocity, angular_velocity = self.model.get_velocity(physics)
+        #dpos = position - self._last_position
 
-        distance_weight = 1.0
-        drift_weight = 2.0
-        orientation_weight = 5.0
-        angular_velocity_weight = 0.05
+        distance_weight = 1.0#1
+        drift_weight = 0.5#2.0
+        orientation_weight = 2.0#5.0
+        #angular_velocity_weight = 0.05
 
-        reward = distance_weight * dpos[0]
-        reward -= drift_weight * abs(position[1])
+        reward = distance_weight * linear_velocity[0]
+        reward -= drift_weight * abs(linear_velocity[1])
+        #reward -= drift_weight * abs(position[1])
+        #reward -= drift_weight * abs(position[1])
         reward -= orientation_weight * np.sum(np.abs(orientation[:2]))
-        reward -= angular_velocity_weight * np.sum(np.abs(angular_velocity[:2]))
+
+        thres_angle = math.radians(60)
+        has_fallen = abs(orientation[0]) > thres_angle or abs(orientation[1]) > thres_angle
+        #if has_fallen:
+        #    reward -= 1000 
+        #reward -= angular_velocity_weight * np.sum(np.abs(angular_velocity[:2]))
         self._last_position = np.array(position)
+        #print(dpos[0], np.sum(np.abs(orientation[:2])), abs(position[1]))
         return reward
+    
+    def should_terminate_episode(self, physics):
+        _, quat = self.model.get_pose(physics)
+        orientation = np.abs(quat_to_euler(quat))
+        thres_angle = math.radians(60)
+        has_fallen = orientation[0] > thres_angle or orientation[1] > thres_angle
+        return has_fallen
