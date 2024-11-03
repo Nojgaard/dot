@@ -24,11 +24,12 @@ def main():
     )
     model_gait = Gait(model_ik.foot_points)
     task = ModulateGaitTask(model, model_ik, model_gait)
-    env = composer.Environment(task, random_state=np.random.RandomState(42))
+    env = composer.Environment(task, random_state=np.random.RandomState(42), strip_singleton_obs_buffer_dim=True)
     env.reset()
 
     action_spec = env.action_spec()
     print(action_spec)
+    print(task.task_observables["leg_phases"](env.physics))
 
     # print(action_spec)
     def update_gui(time_step):
