@@ -25,7 +25,7 @@ class LegIK:
         alpha_0 = math.atan(y / z)
         alpha_1 = math.atan(off1 / off0) if off0 > 0 else math.radians(90)
         alpha_2 = math.atan(off0 / off1)
-        alpha_3 = math.asin(h1 * math.sin(alpha_2 + math.radians(90)) / h2)
+        alpha_3 = math.asin(np.clip(h1 * math.sin(alpha_2 + math.radians(90)) / h2, -1, 1))
         alpha_4 = math.radians(180) - (alpha_3 + alpha_2 + math.radians(90))
         alpha_5 = alpha_1 - alpha_4
         theta_h = alpha_0 - alpha_5
