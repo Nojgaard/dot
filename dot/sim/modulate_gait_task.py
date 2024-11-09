@@ -126,8 +126,8 @@ class ModulateGaitTask(Task):
 
         thres_angle = math.radians(60)
         has_fallen = abs(orientation[0]) > thres_angle or abs(orientation[1]) > thres_angle
-        #if has_fallen:
-        #    reward -= 1000 
+        if has_fallen:
+            reward -= 1000 
         #reward -= angular_velocity_weight * np.sum(np.abs(angular_velocity[:2]))
         self._last_position = np.array(position)
         #print(dpos[0], np.sum(np.abs(orientation[:2])), abs(position[1]))
