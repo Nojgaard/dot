@@ -15,6 +15,7 @@ from numpy.typing import NDArray
 
 import math
 from dot.sim.rotation import quat_to_euler
+from dm_control.utils import rewards
 
 
 class ModulateGaitTask(Task):
@@ -64,7 +65,7 @@ class ModulateGaitTask(Task):
 
     def action_spec(self, physics):
         action_shape = (14,)
-        #curve_z_offset_range = (0, 0.15)
+        # curve_z_offset_range = (0, 0.15)
         curve_z_offset_range = (0, 0.1)
         foot_bias_range = (-0.1, 0.1)
 
@@ -77,11 +78,11 @@ class ModulateGaitTask(Task):
         maximum[2:] = foot_bias_range[1]
 
         return dm_env.specs.BoundedArray(
-            shape=action_shape, 
-            dtype=np.float32, 
+            shape=action_shape,
+            dtype=np.float32,
             minimum=minimum,
             maximum=maximum,
-            name="modulate_gait"
+            name="modulate_gait",
         )
 
     def before_step(self, physics, action, random_state):
@@ -111,28 +112,37 @@ class ModulateGaitTask(Task):
         position, quat = self.model.get_pose(physics)
         orientation = quat_to_euler(quat)
         linear_velocity, angular_velocity = self.model.get_velocity(physics)
-        #dpos = position - self._last_position
+        # dpos = position - self._last_position
 
-        distance_weight = 1.0#1
-        drift_weight = 0.5#2.0
-        orientation_weight = 2.0#5.0
-        #angular_velocity_weight = 0.05
+        # forward_reward = rewards.tolerance(linear_velocity[0], bounds=(0.1, 0.1), margin=0.1, sigmoid="linear")
+        forward_reward = 10 * linear_velocity[0]
+        drift_reward = rewards.tolerance(
+            linear_velocity[1], bounds=(0, 0), margin=0.1, sigmoid="linear"
+        )
+        stability_reward = rewards.tolerance(
+            orientation, bounds=(0, 0), margin=math.radians(60), sigmoid="gaussian"
+        )
 
-        reward = distance_weight * linear_velocity[0]
-        reward -= drift_weight * abs(linear_velocity[1])
-        #reward -= drift_weight * abs(position[1])
-        #reward -= drift_weight * abs(position[1])
-        reward -= orientation_weight * np.sum(np.abs(orientation[:2]))
+        joints = self.model.mjcf_model.find_all("joint")
+        energy_reward = rewards.tolerance(
+            np.dot(physics.data.actuator_force, physics.bind(joints).qvel),
+            bounds=(0, 0),
+            margin=15,
+            sigmoid="gaussian"
+        )
+        #print(energy_reward)
 
-        thres_angle = math.radians(60)
-        has_fallen = abs(orientation[0]) > thres_angle or abs(orientation[1]) > thres_angle
-        if has_fallen:
-            reward -= 1000 
-        #reward -= angular_velocity_weight * np.sum(np.abs(angular_velocity[:2]))
-        self._last_position = np.array(position)
-        #print(dpos[0], np.sum(np.abs(orientation[:2])), abs(position[1]))
-        return reward
-    
+        reward_terms = np.array(
+            [
+                forward_reward,
+                # drift_reward,
+                energy_reward,
+                *stability_reward,
+            ]
+        )
+
+        return np.prod(reward_terms)
+
     def should_terminate_episode(self, physics):
         _, quat = self.model.get_pose(physics)
         orientation = np.abs(quat_to_euler(quat))

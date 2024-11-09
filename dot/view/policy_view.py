@@ -27,6 +27,7 @@ def main():
         gui.update_model(model_ik, model_gait)
         obs = normalizer.normalize_obs(time_step.observation)
         action, _ = agent.predict(obs)
+        print("reward", time_step.reward)
         return action
 
     gui.launch()
