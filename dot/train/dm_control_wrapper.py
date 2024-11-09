@@ -25,23 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from gymnasium import core, spaces
-
-try:
-    from dm_env import specs
-except ImportError:
-    specs = None
-try:
-    # Suppress MuJoCo warning (dm_control uses absl logging).
-    import absl.logging
-
-    absl.logging.set_verbosity("error")
-    from dm_control import suite
-except (ImportError, OSError):
-    suite = None
+from dm_env import specs
 import numpy as np
-
-from ray.rllib.utils.annotations import PublicAPI
-
 
 def _spec_to_box(spec):
     def extract_min_max(s):
@@ -73,7 +58,6 @@ def _flatten_obs(obs):
     return np.concatenate(obs_pieces, axis=0)
 
 
-@PublicAPI
 class DMCEnv(core.Env):
     def __init__(
         self,
@@ -101,14 +85,6 @@ class DMCEnv(core.Env):
                     "The `specs` module from `dm_env` was not imported. Make sure "
                     "`dm_env` is installed and visible in the current python "
                     "environment."
-                )
-            )
-        if suite is None:
-            raise RuntimeError(
-                (
-                    "The `suite` module from `dm_control` was not imported. Make "
-                    "sure `dm_control` is installed and visible in the current "
-                    "python enviornment."
                 )
             )
 

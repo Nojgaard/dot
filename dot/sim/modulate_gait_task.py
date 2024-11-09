@@ -78,7 +78,7 @@ class ModulateGaitTask(Task):
 
         return dm_env.specs.BoundedArray(
             shape=action_shape, 
-            dtype=np.float64, 
+            dtype=np.float32, 
             minimum=minimum,
             maximum=maximum,
             name="modulate_gait"

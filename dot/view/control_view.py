@@ -8,28 +8,19 @@ from dot.sim.quadruped import Quadruped
 from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.view.control_gui import ControlGui
 from scipy.spatial.transform import Rotation
+from dot.sim.environments import modulate_gait_env
 
 def main():
 
     gui = ControlGui()
 
-    model = Quadruped()
-    model_ik = QuadropedIK(
-        model.body_length,
-        model.body_width,
-        model.max_height * 0.7,
-        model.hip_offset,
-        model.shoulder_length,
-        model.wrist_length,
-    )
-    model_gait = Gait(model_ik.foot_points)
-    task = ModulateGaitTask(model, model_ik, model_gait)
-    env = composer.Environment(task, random_state=np.random.RandomState(42), strip_singleton_obs_buffer_dim=True)
+    env = modulate_gait_env()
+    model_ik = env.task.model_ik
+    model_gait = env.task.model_gait
     env.reset()
 
     action_spec = env.action_spec()
     print(action_spec)
-    print(task.task_observables["leg_phases"](env.physics))
 
     # print(action_spec)
     def update_gui(time_step):
