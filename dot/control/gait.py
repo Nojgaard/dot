@@ -74,7 +74,7 @@ class Gait:
         self._prev_foot_pose = self.foot_rest_pose.copy()
 
     def stance_time(self) -> float:
-        return min(self.swing_time * 1.3, 2 * abs(self.step_length) / self.target_speed)
+        return min(self.swing_time * 1.3, 2 * abs(self.step_length / self.target_speed))
 
     def stride_time(self) -> float:
         return self.swing_time + self.stance_time()

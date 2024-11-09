@@ -10,6 +10,7 @@ from dot.view.control_gui import ControlGui
 from scipy.spatial.transform import Rotation
 from dot.sim.environments import modulate_gait_env
 
+
 def main():
 
     gui = ControlGui()
@@ -28,8 +29,8 @@ def main():
         action = np.zeros(action_spec.shape)
         action[0] = gui.penetration_depth
         action[1] = gui.clearance_height
-        #print(time_step.observation)
-        #print(f"TIME {model_gait._time}")
+        # print(time_step.observation)
+        # print(f"TIME {model_gait._time}")
         return action
 
     gui.launch()
