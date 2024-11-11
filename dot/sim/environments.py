@@ -5,6 +5,7 @@ from dm_env import specs
 
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
+from dot.sim.gait_input_controller import GaitInputController
 from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.sim.quadruped import Quadruped
 
@@ -111,7 +112,8 @@ def modulate_gait_env(time_limit=float('inf'), step_length=0.035):
         model.wrist_length,
     )
     model_gait = Gait(model_ik.foot_points, step_length=step_length)
-    task = ModulateGaitTask(model, model_ik, model_gait)
+    input_controller = GaitInputController(model_gait, time_per_mode=5)
+    task = ModulateGaitTask(model, model_ik, model_gait, input_controller)
     env = composer.Environment(
         task,
         time_limit,

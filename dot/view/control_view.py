@@ -16,6 +16,7 @@ def main():
     gui = ControlGui()
 
     env = modulate_gait_env()
+    task: ModulateGaitTask = env.task
     model_ik = env.task.model_ik
     model_gait = env.task.model_gait
     env.reset()
@@ -25,6 +26,7 @@ def main():
 
     # print(action_spec)
     def update_gui(time_step):
+        task.enable_input_controller = gui.enable_controller
         gui.update_model(model_ik, model_gait)
         action = np.zeros(action_spec.shape)
         action[0] = gui.penetration_depth

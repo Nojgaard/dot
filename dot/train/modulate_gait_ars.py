@@ -5,11 +5,13 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize
 
 from dot.sim.environments import modulate_gait_env
+from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.train.dm2gym import DmToGymEnv
 
 
 def create_env():
-    dm_env = modulate_gait_env(time_limit=10.0, step_length=0.035)
+    dm_env = modulate_gait_env(time_limit=20.0, step_length=0.035)
+    dm_env.task.enable_input_controller = True
     vec_env = make_vec_env(lambda: DmToGymEnv(dm_env))
     vec_env = VecNormalize(vec_env, norm_reward=False)
     return vec_env

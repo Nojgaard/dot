@@ -24,6 +24,7 @@ def main():
 
     # print(action_spec)
     def get_action(time_step):
+        env.task.enable_input_controller = gui.enable_controller
         gui.update_model(model_ik, model_gait)
         obs = normalizer.normalize_obs(time_step.observation)
         action, _ = agent.predict(obs)

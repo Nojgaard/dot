@@ -8,6 +8,7 @@ import dm_env.specs
 
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
+from dot.sim.gait_input_controller import GaitInputController
 from dot.sim.quadruped import Quadruped
 from scipy.spatial.transform import Rotation
 import numpy as np
@@ -20,11 +21,17 @@ from dm_control.utils import rewards
 
 class ModulateGaitTask(Task):
     def __init__(
-        self, model: Quadruped, model_ik: QuadropedIK, model_gait: Gait
+        self,
+        model: Quadruped,
+        model_ik: QuadropedIK,
+        model_gait: Gait,
+        input_controller: GaitInputController,
     ) -> None:
         self.model = model
         self.model_ik = model_ik
         self.model_gait = model_gait
+        self.input_controller = input_controller
+        self.enable_input_controller = False
 
         self._rest_joint_angles = model_ik.find_angles().flatten()
 
@@ -98,6 +105,11 @@ class ModulateGaitTask(Task):
         joint_angles = self.model_ik.find_angles(foot_positions)
         super().before_step(physics, joint_angles.flatten(), random_state)
 
+    def after_step(self, phsyics, random_state):
+        if self.enable_input_controller:
+            dt = self.control_timestep
+            self.input_controller.update(dt)
+
     def initialize_episode(self, physics: Physics, random_state):
         self.model.set_pose(
             physics, self._creature_initial_pose, np.array([1, 0, 0, 0])
@@ -106,6 +118,7 @@ class ModulateGaitTask(Task):
         for name, angle in zip(joint_names, self._rest_joint_angles):
             physics.named.data.qpos[f"spot/{name}"] = angle
 
+        self.input_controller.initialize_episode()
         self._last_position = np.array(self.model.get_pose(physics)[0])
 
     def get_reward(self, physics: Physics) -> float:
@@ -128,9 +141,9 @@ class ModulateGaitTask(Task):
             np.dot(physics.data.actuator_force, physics.bind(joints).qvel),
             bounds=(0, 0),
             margin=15,
-            sigmoid="gaussian"
+            sigmoid="linear",
         )
-        #print(energy_reward)
+        # print(energy_reward)
 
         reward_terms = np.array(
             [
