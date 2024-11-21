@@ -6,8 +6,8 @@ import numpy as np
 
 class GaitMode(Enum):
     Forward = 0
-    SideStep = 1
-    Rotate = 2
+    SideStep = 2
+    Rotate = 1
     Complex = 3
 
 
@@ -28,9 +28,22 @@ class GaitInputController:
         self.time = 0
         self.bounds = InputBounds()
         self.current_mode = GaitMode.Forward
+        self._has_ramped_up = False
 
     def update(self, dt: float):
         self.time += dt
+
+        if self.current_mode.value == 0 and self.time < 0.5:
+            self.gait.step_length = 0
+            self.gait.target_speed = 0.1
+            self.gait.lateral_rotation_angle = 0
+            self.gait.yaw_rate = 0
+            return
+        elif not self._has_ramped_up:
+            self._has_ramped_up = True
+            self.sample_control_inputs(self.current_mode)
+            return
+
         if self.time < self.time_per_mode:
             return
 
@@ -42,6 +55,7 @@ class GaitInputController:
     def initialize_episode(self):
         self.time = 0
         self.current_mode = GaitMode.Forward
+        self._has_ramped_up = False
         self.sample_control_inputs(self.current_mode)
 
     def sample_control_inputs(self, mode: GaitMode):

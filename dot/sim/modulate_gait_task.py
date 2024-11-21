@@ -93,6 +93,8 @@ class ModulateGaitTask(Task):
         )
 
     def before_step(self, physics, action, random_state):
+        self._last_action = action
+
         self.model_gait.penetration_depth = action[0]
         self.model_gait.clearance_height = action[1]
 
@@ -120,39 +122,77 @@ class ModulateGaitTask(Task):
 
         self.input_controller.initialize_episode()
         self._last_position = np.array(self.model.get_pose(physics)[0])
+        self._avel_list = []
 
     def get_reward(self, physics: Physics) -> float:
         position, quat = self.model.get_pose(physics)
         orientation = quat_to_euler(quat)
         linear_velocity, angular_velocity = self.model.get_velocity(physics)
+
+        self._avel_list.append(linear_velocity[:2])
+        avg_linear_velocity = np.mean(np.array(self._avel_list), axis=0)
+        if len(self._avel_list) == 5:
+            self._avel_list = self._avel_list[1:]
+        target_velocity = abs(
+            2 * self.model_gait.step_length / (self.model_gait.stance_time() + 0.00001)
+        )
+        #print(yaw_velocity, avg_angular_velocity)
+
+        #print(self.model_gait.yaw_rate, avg_angular_velocity)
         # dpos = position - self._last_position
 
         # forward_reward = rewards.tolerance(linear_velocity[0], bounds=(0.1, 0.1), margin=0.1, sigmoid="linear")
-        forward_reward = 10 * linear_velocity[0]
+        # forward_reward = 10 * linear_velocity[0]
+        forward_reward = rewards.tolerance(
+            np.linalg.norm(linear_velocity[:2]),
+            #np.linalg.norm(avg_linear_velocity),
+            bounds=(target_velocity - 0.001, float("inf")),
+            margin=target_velocity,
+            sigmoid="linear"
+        )
+        #print(forward_reward, np.linalg.norm(linear_velocity[:2]), target_velocity)
+        target_yaw = abs(self.model_gait.yaw_rate)
         drift_reward = rewards.tolerance(
             linear_velocity[1], bounds=(0, 0), margin=0.1, sigmoid="linear"
         )
         stability_reward = rewards.tolerance(
-            orientation, bounds=(0, 0), margin=math.radians(60), sigmoid="gaussian"
+            orientation[:2], bounds=(0, 0), margin=math.radians(60), sigmoid="gaussian"
         )
+        #print(stability_reward)
+        
+        small_action = rewards.tolerance(
+            self._last_action[2:], bounds = (0, 0), margin=0.05, sigmoid="quadratic"
+        ).min()
+        #print(self._last_action)
+        small_action = (1 + 4 * small_action) / 5
+        #print(self._last_action)
+        #print(small_action, stability_reward, forward_reward, target_velocity, np.linalg.norm(linear_velocity[:2]))
 
         joints = self.model.mjcf_model.find_all("joint")
         energy_reward = rewards.tolerance(
-            np.dot(physics.data.actuator_force, physics.bind(joints).qvel),
+            np.dot(
+                np.abs(physics.data.actuator_force), np.abs(physics.bind(joints).qvel)
+            ),
             bounds=(0, 0),
-            margin=15,
+            margin=45,
             sigmoid="linear",
         )
-        # print(energy_reward)
+        energy_reward = (1 + 4 * energy_reward) / 5
+        #print(np.dot(
+        #        np.abs(physics.data.actuator_force), np.abs(physics.bind(joints).qvel)
+        #    ))
+        #print(forward_reward, small_action, stability_reward, target_velocity + 0.001)
 
         reward_terms = np.array(
             [
                 forward_reward,
+                small_action,
                 # drift_reward,
                 energy_reward,
                 *stability_reward,
             ]
         )
+       # print(np.prod(reward_terms))
 
         return np.prod(reward_terms)
 
