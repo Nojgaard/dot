@@ -120,7 +120,8 @@ class ModulateGaitTask(Task):
         for name, angle in zip(joint_names, self._rest_joint_angles):
             physics.named.data.qpos[f"spot/{name}"] = angle
 
-        self.input_controller.initialize_episode()
+        if self.enable_input_controller:
+            self.input_controller.initialize_episode()
         self._last_position = np.array(self.model.get_pose(physics)[0])
         self._avel_list = []
 
@@ -133,9 +134,10 @@ class ModulateGaitTask(Task):
         avg_linear_velocity = np.mean(np.array(self._avel_list), axis=0)
         if len(self._avel_list) == 5:
             self._avel_list = self._avel_list[1:]
-        target_velocity = abs(
-            2 * self.model_gait.step_length / (self.model_gait.stance_time() + 0.00001)
-        )
+        #target_velocity = abs(
+        #    2 * self.model_gait.get_step_length(self.model_gait.target_speed, self.model_gait.stance_time()) / (self.model_gait.stance_time() + 0.00001)
+        #)
+        target_velocity = abs(self.model_gait.target_speed)
         #print(yaw_velocity, avg_angular_velocity)
 
         #print(self.model_gait.yaw_rate, avg_angular_velocity)
@@ -143,6 +145,7 @@ class ModulateGaitTask(Task):
 
         # forward_reward = rewards.tolerance(linear_velocity[0], bounds=(0.1, 0.1), margin=0.1, sigmoid="linear")
         # forward_reward = 10 * linear_velocity[0]
+        #print(target_velocity, np.linalg.norm(linear_velocity[:2]))
         forward_reward = rewards.tolerance(
             np.linalg.norm(linear_velocity[:2]),
             #np.linalg.norm(avg_linear_velocity),

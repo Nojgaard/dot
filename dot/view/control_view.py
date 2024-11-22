@@ -12,9 +12,6 @@ from dot.sim.environments import modulate_gait_env
 
 
 def main():
-
-    gui = ControlGui()
-
     env = modulate_gait_env()
     task: ModulateGaitTask = env.task
     model_ik = env.task.model_ik
@@ -23,15 +20,14 @@ def main():
 
     action_spec = env.action_spec()
     print(action_spec)
-
-    # print(action_spec)
+    gui = ControlGui(model_ik, model_gait)
     def update_gui(time_step):
         task.enable_input_controller = gui.enable_controller
         gui.update_model(model_ik, model_gait)
         action = np.zeros(action_spec.shape)
         action[0] = gui.penetration_depth
         action[1] = gui.clearance_height
-        print("reward:", time_step.reward)
+        # print("reward:", time_step.reward)
         # print(time_step.observation)
         # print(f"TIME {model_gait._time}")
         return action

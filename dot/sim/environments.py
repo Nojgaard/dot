@@ -101,7 +101,7 @@ class LearningEnvironment(dm_env.Environment):
         return self._env.close()
 
 
-def modulate_gait_env(time_limit=float('inf'), time_per_mode=5, step_length=0.035):
+def modulate_gait_env(time_limit=float('inf'), time_per_mode=5):
     model = Quadruped()
     model_ik = QuadropedIK(
         model.body_length,
@@ -110,8 +110,9 @@ def modulate_gait_env(time_limit=float('inf'), time_per_mode=5, step_length=0.03
         model.hip_offset,
         model.shoulder_length,
         model.wrist_length,
+        translation=np.array([-0.035, 0, 0])
     )
-    model_gait = Gait(model_ik.foot_points, step_length=step_length)
+    model_gait = Gait(model_ik.foot_points)
     input_controller = GaitInputController(model_gait, time_per_mode=time_per_mode)
     task = ModulateGaitTask(model, model_ik, model_gait, input_controller)
     env = composer.Environment(

@@ -54,26 +54,30 @@ def _open_gui_window(enable_controller, control_inputs: dict[str, list[ControlIn
 
 
 class ControlGui:
-    def __init__(self, enable_controller=False):
+    def __init__(self, model_ik: QuadropedIK, gait: Gait, enable_controller=False):
         self._enable_controller = Value("i", int(enable_controller))
+        orientation = model_ik.rotation.as_euler("XYZ", degrees=False)
         self._control_inputs = {
             "Body Translation": [
-                ControlInput("x", 0, (-0.4, 0.4)),
-                ControlInput("y", 0, (-0.4, 0.4)),
-                ControlInput("z", 0, (-0.4, 0.4)),
+                ControlInput("x", model_ik.translation[0], (-0.4, 0.4)),
+                ControlInput("y", model_ik.translation[1], (-0.4, 0.4)),
+                ControlInput("z", model_ik.translation[2], (-0.4, 0.4)),
             ],
             "Body Rotation": [
-                ControlInput("roll", 0, (-1, 1)),
-                ControlInput("pitch", 0, (-1, 1)),
-                ControlInput("yaw", 0, (-1, 1)),
+                ControlInput("roll", orientation[0], (-1, 1)),
+                ControlInput("pitch", orientation[1], (-1, 1)),
+                ControlInput("yaw", orientation[2], (-1, 1)),
             ],
             "Gait": [
-                ControlInput("step length", 0, (-0.1, 0.1)),
-                ControlInput("lateral angle", 0, (-np.pi / 2, np.pi / 2)),
-                ControlInput("yaw rate", 0, (-1, 1)),
-                ControlInput("velocity", 0.1, (-0.3, 0.3)),
-                ControlInput("clearance height", 0.03, (0, 0.1)),
-                ControlInput("penetration depth", 0.005, (0, 0.05)),
+                ControlInput("velocity", gait.target_speed, (-1.0, 1.0)),
+                ControlInput(
+                    "lateral angle",
+                    gait.lateral_rotation_angle,
+                    (-np.pi / 2, np.pi / 2),
+                ),
+                ControlInput("yaw rate", gait.yaw_rate, (-1, 1)),
+                ControlInput("clearance height", gait.clearance_height, (0, 0.1)),
+                ControlInput("penetration depth", gait.penetration_depth, (0, 0.05)),
             ],
         }
 
@@ -105,10 +109,6 @@ class ControlGui:
         raise ValueError(f"Cant find name {name}")
 
     @property
-    def step_length(self):
-        return self._find_input("step length").value.value
-
-    @property
     def lateral_angle(self):
         return self._find_input("lateral angle").value.value
 
@@ -127,7 +127,7 @@ class ControlGui:
     @property
     def velocity(self):
         return self._find_input("velocity").value.value
-    
+
     @property
     def enable_controller(self):
         return bool(self._enable_controller.value)
@@ -142,7 +142,6 @@ class ControlGui:
         model_ik.translation = self.ctrl_translation
         model_ik.rotation = self.crtl_rotation
 
-        model_gait.step_length = self.step_length
         model_gait.lateral_rotation_angle = self.lateral_angle
         model_gait.yaw_rate = self.yaw_rate
         model_gait.target_speed = self.velocity

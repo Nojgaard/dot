@@ -13,8 +13,7 @@ class GaitMode(Enum):
 
 @dataclass
 class InputBounds:
-    step_length = (0.02, 0.05)
-    velocity = (0.05, 0.2)
+    velocity = (0.05, 0.4)
     lateral = (-np.pi / 2.0, np.pi / 2.0)
     yaw = (-1, 1)
 
@@ -34,8 +33,7 @@ class GaitInputController:
         self.time += dt
 
         if self.current_mode.value == 0 and self.time < 0.5:
-            self.gait.step_length = 0
-            self.gait.target_speed = 0.1
+            self.gait.target_speed = 0
             self.gait.lateral_rotation_angle = 0
             self.gait.yaw_rate = 0
             return
@@ -59,8 +57,7 @@ class GaitInputController:
         self.sample_control_inputs(self.current_mode)
 
     def sample_control_inputs(self, mode: GaitMode):
-        self.gait.step_length = 0.035
-        self.gait.target_speed = 0.1
+        self.gait.target_speed = 0.2
         self.gait.lateral_rotation_angle = 0
         self.gait.yaw_rate = 0
 
@@ -68,7 +65,6 @@ class GaitInputController:
         bounds = self.bounds
         if mode in [GaitMode.Forward, GaitMode.Complex]:
             step_direction = 1 if rng.random() > 0.25 else -1
-            self.gait.step_length = step_direction * rng.uniform(*bounds.step_length)
             self.gait.target_speed = rng.uniform(*bounds.velocity)
 
         if mode in [GaitMode.SideStep, GaitMode.Complex]:

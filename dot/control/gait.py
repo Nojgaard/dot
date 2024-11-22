@@ -17,7 +17,7 @@ class BezierCurve:
 
     def evaluate(self, t: float, xy_length: float, y_angle: float, z_height: float):
         if xy_length == 0:
-           return np.zeros(3)
+            return np.zeros(3)
         xy_control_points = self._xy_control_points * xy_length
         x_poly = BPoly.construct_fast(
             xy_control_points * np.cos(y_angle), self._t_range
@@ -42,21 +42,23 @@ class SineCurve:
         return np.array([x, y, z])
 
 
+def _step_length(velocity: float, stance_time: float) -> float:
+    return (velocity * stance_time) / 2
+
+
 class Gait:
     def __init__(
         self,
         foot_rest_poses: NDArray,
-        step_length: float = 0,
+        target_speed: float = 0.1,
         lateral_rotation_angle: float = 0,
         yaw_rate: float = 0,
-        target_speed: float = 0.1,
         swing_time: float = 0.15,
         phase_lag: tuple[float, float, float, float] = (0, 0.5, 0.5, 0),
         clearance_height: float = 0.03,
         penetration_depth: float = 0.005,
     ):
         self.foot_rest_pose = foot_rest_poses
-        self.step_length = step_length
         self.lateral_rotation_angle = lateral_rotation_angle
         self.yaw_rate = yaw_rate
         self.target_speed = target_speed
@@ -73,8 +75,12 @@ class Gait:
         )
         self._prev_foot_pose = self.foot_rest_pose.copy()
 
+    # def stance_time(self) -> float:
+    #    return min(self.swing_time * 1.3, 2 * abs(self.step_length / self.target_speed))
+
     def stance_time(self) -> float:
-        return min(self.swing_time * 1.3, 2 * abs(self.step_length / self.target_speed))
+        velocity = max(abs(self.target_speed), abs(self.yaw_rate))
+        return self.swing_time * (1 - velocity / 3)
 
     def stride_time(self) -> float:
         return self.swing_time + self.stance_time()
@@ -101,11 +107,17 @@ class Gait:
         stride_time = self.stride_time()
         self._time = (self._time + dt) % stride_time
 
+        if abs(self.target_speed) < 0.005 and abs(self.yaw_rate) < 0.005:
+            return self.foot_rest_pose.copy()
+
         leg_phase = self.leg_phase()
         is_stance = leg_phase < 1
         leg_phase[~is_stance] -= 1
 
-        yaw_rate = self.yaw_rate * dt
+        stance_time = self.stance_time()
+        fwd_step_length = _step_length(self.target_speed, stance_time)
+        yaw_step_length = _step_length(self.yaw_rate, stance_time)
+
         rel_prev_foot_pose = self._prev_foot_pose - self.foot_rest_pose
         rest_foot_mag = np.linalg.norm(self.foot_rest_pose[:, :2], axis=1)
         prev_foot_mag = np.linalg.norm(rel_prev_foot_pose[:, :2], axis=1)
@@ -114,6 +126,7 @@ class Gait:
         xy_angle = np.pi / 2 + rel_xy_angle + self._rest_xy_angle
 
         foot_poses = self.foot_rest_pose.copy()
+        # print(self.swing_time, self.stance_time(), self.get_step_length(self.target_speed, self.stance_time()))
 
         for i in range(len(foot_poses)):
             curve = self._stance_curve if is_stance[i] else self._swing_curve
@@ -123,13 +136,13 @@ class Gait:
 
             foot_poses[i, :] += curve.evaluate(
                 leg_phase[i],
-                self.step_length,
+                fwd_step_length,
                 self.lateral_rotation_angle,
                 height_scalar,
             )
             foot_poses[i, :] += curve.evaluate(
                 leg_phase[i],
-                yaw_rate,
+                yaw_step_length,
                 xy_angle[i],
                 height_scalar,
             )

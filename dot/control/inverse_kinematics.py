@@ -58,7 +58,7 @@ class QuadropedIK:
         shoulder_length: float,
         wrist_length: float,
         rotation: Rotation = Rotation.identity(),
-        translation: NDArray[np.floating] = np.zeros((1, 3)),
+        translation: NDArray[np.floating] = np.zeros(3),
     ) -> None:
         self.body_points = np.array(
             [[x * length / 2, y * width / 2, 0] for x, y in product([1, -1], [1, -1])]

@@ -29,13 +29,6 @@ def update_leg_line_plots(model_gait: Gait, leg_line_plots: list[list[Any]]):
     all_points = np.concatenate(foot_poses)
     return np.min(all_points, axis=0), np.max(all_points, axis=0)
 
-def update_gait(model_gait: Gait, gui: ControlGui):
-    model_gait.step_length = gui.step_length
-    model_gait.lateral_rotation_angle = gui.lateral_angle
-    model_gait.yaw_rate = gui.yaw_rate
-    model_gait.clearance_height = gui.clearance_height
-    model_gait.penetration_depth = gui.penetration_depth
-
 def main():
     model = Quadruped()
 
@@ -65,8 +58,8 @@ def main():
     fps = 5
     dt = 0.02
     def update(frame_num):
-        update_gait(model_gait, gui)
-        update_gait(model_gait_curves, gui)
+        gui.update_model(model_ik, model_gait)
+        gui.update_model(model_ik, model_gait_curves)
         lim_min, lim_max = update_leg_line_plots(model_gait_curves, leg_line_plots)
         ax.set_xlim(lim_min[0], lim_max[0])
         ax.set_ylim(lim_min[1], lim_max[1])
