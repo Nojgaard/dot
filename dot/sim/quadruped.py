@@ -35,6 +35,15 @@ class Quadruped(Entity):
     
     def angular_velocity(self, physics: Physics):
         return np.array(physics.bind(self.mjcf_model.sensor.gyro).sensordata)
+    
+    def linear_velocity(self, physics: Physics):
+        velocimeter = self.mjcf_model.sensor.velocimeter
+        return np.array(physics.bind(velocimeter).sensordata)
+    
+    def orientation(self, physics: Physics):
+        framequat_element = self.mjcf_model.sensor.framequat
+        quat = physics.bind(framequat_element).sensordata
+        return quat_to_euler(quat)[:2]
 
     @property
     def observables(self) -> "QuadrupedObservables":

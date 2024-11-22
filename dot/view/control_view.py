@@ -27,7 +27,7 @@ def main():
         action = np.zeros(action_spec.shape)
         action[0] = gui.penetration_depth
         action[1] = gui.clearance_height
-        # print("reward:", time_step.reward)
+        print("reward:", time_step.reward)
         # print(time_step.observation)
         # print(f"TIME {model_gait._time}")
         return action

@@ -121,5 +121,6 @@
     <framequat name="imu_quat" objtype="site" objname="imu" />
     <gyro name="imu_gyro" site="imu" />
     <accelerometer name="imu_acc" site="imu" />
+    <velocimeter name="imu_vel" site="imu" />
   </sensor>
 </mujoco>

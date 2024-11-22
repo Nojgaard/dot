@@ -7,8 +7,6 @@ from dot.view.control_gui import ControlGui
 
 
 def main():
-    gui = ControlGui()
-
     env = modulate_gait_env()
     model_ik = env.task.model_ik
     model_gait = env.task.model_gait
@@ -23,6 +21,7 @@ def main():
     default_action[:2] += 0.03
 
     # print(action_spec)
+    gui = ControlGui(model_ik, model_gait)
     def get_action(time_step):
         env.task.enable_input_controller = gui.enable_controller
         gui.update_model(model_ik, model_gait)
