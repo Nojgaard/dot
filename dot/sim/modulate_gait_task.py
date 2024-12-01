@@ -2,12 +2,13 @@ from dm_control import composer
 from dm_control.composer import Entity, Task
 from dm_control.composer.observation import observable
 from dm_control.composer.variation import distributions, noises
-from dm_control.locomotion.arenas import floors
+from dm_control.locomotion.arenas import floors, Bowl
 from dm_control.mujoco import Physics
 import dm_env.specs
 
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import QuadropedIK
+from dot.sim.bumpy_arena import BumpyArena
 from dot.sim.gait_input_controller import GaitInputController
 from dot.sim.quadruped import Quadruped
 from scipy.spatial.transform import Rotation
@@ -35,7 +36,8 @@ class ModulateGaitTask(Task):
 
         self._rest_joint_angles = model_ik.find_angles().flatten()
 
-        self._arena = floors.Floor(reflectance=0.0)
+        self._arena = BumpyArena()
+        #self._arena = floors.Floor(reflectance=0.0)
         self._creature_initial_pose = (0, 0, 0.19)
         self._arena.add_free_entity(self.model)
         # self._arena.mjcf_model.worldbody.add('light', pos=(0, 0, 4))
@@ -95,8 +97,8 @@ class ModulateGaitTask(Task):
     def before_step(self, physics, action, random_state):
         self._last_action = action
 
-        self.model_gait.penetration_depth = action[0]
-        self.model_gait.clearance_height = action[1]
+        #self.model_gait.penetration_depth = action[0]
+        #self.model_gait.clearance_height = action[1]
 
         foot_bias = action[2:].reshape((4, 3))
 
@@ -123,6 +125,9 @@ class ModulateGaitTask(Task):
         if self.enable_input_controller:
             self.input_controller.initialize_episode()
 
+        self._arena.regenerate(random_state)
+        self._arena.initialize_episode(physics, random_state)
+
     def get_reward(self, physics: Physics) -> float:
         attitude = self.model.orientation(physics)[:2]
         linear_velocity = self.model.linear_velocity(physics)
@@ -143,35 +148,39 @@ class ModulateGaitTask(Task):
             linear_velocity[1],
             bounds=(target_yv, target_yv),
             margin=1,
-            sigmoid="linear"
+            sigmoid="linear",
         )
 
         stability_reward = rewards.tolerance(
-            attitude, bounds=(0, 0), margin=math.radians(60), sigmoid="gaussian"
+            attitude, bounds=(0, 0), margin=math.radians(60), sigmoid="linear"
         )
 
         small_action_reward = rewards.tolerance(
-            self._last_action[2:], bounds=(0, 0), margin=0.05, sigmoid="quadratic"
-        ).min()
-        small_action_reward = (3 + small_action_reward) / 4
+            self._last_action, bounds=(0, 0), margin=0.05, sigmoid="gaussian"
+        ).mean()
+        #print(self._last_action)
+        #print(small_action_reward)
+        small_action_reward = (1 + 4 * small_action_reward) / 5
 
         joints = self.model.mjcf_model.find_all("joint")
         joint_forces = np.abs(physics.data.actuator_force)
         joint_velocities = np.abs(physics.bind(joints).qvel)
+        #print((joint_forces * joint_velocities).mean())
         energy_reward = rewards.tolerance(
-            np.dot(joint_forces, joint_velocities),
+            #np.dot(joint_forces, joint_velocities),
+            (joint_forces * joint_velocities).mean(),
             bounds=(0, 0),
-            margin=45,
-            sigmoid="linear",
+            margin=2,
+            sigmoid="gaussian",
         )
         energy_reward = (1 + 4 * energy_reward) / 5
+        #print(small_action_reward)
 
         reward_terms = np.array(
             [
                 forward_reward,
                 lateral_reward,
                 small_action_reward,
-                # drift_reward,
                 energy_reward,
                 *stability_reward,
             ]

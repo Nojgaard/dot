@@ -5,17 +5,18 @@ import numpy as np
 
 
 class GaitMode(Enum):
-    Forward = 0
-    SideStep = 2
-    Rotate = 1
-    Complex = 3
+    RampUp = 0
+    Forward = 1
+    Rotate = 2
+    SideStep = 3
+    Complex = 4
 
 
 @dataclass
 class InputBounds:
-    velocity = (0.05, 0.4)
-    lateral = (-np.pi / 2.0, np.pi / 2.0)
-    yaw = (-1, 1)
+    velocity = (0.1, 0.5)
+    lateral = (-np.pi / 4.0, np.pi / 4.0)
+    yaw = (-0.5, 0.5)
 
 
 class GaitInputController:
@@ -26,58 +27,58 @@ class GaitInputController:
         self.time_per_mode = time_per_mode
         self.time = 0
         self.bounds = InputBounds()
-        self.current_mode = GaitMode.Forward
-        self._has_ramped_up = False
+
+        self.mode_sequence = np.arange(len(GaitMode))
+        np.random.shuffle(self.mode_sequence[1:])
+        self.current_mode_idx = 0
 
     def update(self, dt: float):
         self.time += dt
+        time_per_mode = self.time_per_mode if self.current_mode_idx > 0 else 0.2
 
-        if self.current_mode.value == 0 and self.time < 0.5:
-            self.gait.target_speed = 0
-            self.gait.lateral_rotation_angle = 0
-            self.gait.yaw_rate = 0
-            return
-        elif not self._has_ramped_up:
-            self._has_ramped_up = True
-            self.sample_control_inputs(self.current_mode)
-            return
-
-        if self.time < self.time_per_mode:
+        if self.time < time_per_mode:
             return
 
         self.time = 0
-        next_mode = self.current_mode.value + 1
-        self.current_mode = GaitMode(min(GaitMode.Complex.value, next_mode))
-        self.sample_control_inputs(self.current_mode)
+        self.current_mode_idx = min(len(GaitMode) - 1, self.current_mode_idx + 1)
+        self.sample_control_inputs()
 
     def initialize_episode(self):
         self.time = 0
-        self.current_mode = GaitMode.Forward
-        self._has_ramped_up = False
-        self.sample_control_inputs(self.current_mode)
+        self.current_mode_idx = 0
+        np.random.shuffle(self.mode_sequence[1:])
+        self.sample_control_inputs()
 
-    def sample_control_inputs(self, mode: GaitMode):
-        self.gait.target_speed = 0.2
+    def sample_control_inputs(self):
+        self.gait.target_speed = 0
         self.gait.lateral_rotation_angle = 0
         self.gait.yaw_rate = 0
 
+        mode = GaitMode(self.mode_sequence[self.current_mode_idx])
         rng = np.random.default_rng()
         bounds = self.bounds
-        if mode in [GaitMode.Forward, GaitMode.Complex]:
-            step_direction = 1 if rng.random() > 0.25 else -1
+
+        if mode == GaitMode.RampUp:
+            return
+        elif mode == GaitMode.Forward:
+            direction = 1 if rng.random() > 0.25 else -1
             self.gait.target_speed = rng.uniform(*bounds.velocity)
+        elif mode == GaitMode.Rotate:
+            self.gait.target_speed = 0.3
+            self.gait.yaw_rate = rng.uniform(*bounds.yaw)
+        elif mode == GaitMode.SideStep:
+            self.gait.target_speed = 0.3
+            self.gait.lateral_rotation_angle = rng.uniform(*bounds.lateral)
+        elif mode == GaitMode.Complex:
+            direction = 1 if rng.random() > 0.25 else -1
+            self.gait.target_speed = rng.uniform(*bounds.velocity)
+            self.gait.yaw_rate = rng.uniform(*bounds.yaw)
+            self.gait.lateral_rotation_angle = rng.uniform(*bounds.lateral)
+        else:
+            raise NotImplementedError()
 
-        if mode in [GaitMode.SideStep, GaitMode.Complex]:
-            self.gait.lateral_rotation_angle = rng.uniform(*bounds.lateral)/2
-            #self.gait.lateral_rotation_angle = np.clip(rng.normal(0, 0.5), *bounds.lateral)
-            pass
-
-        if mode in [GaitMode.Rotate, GaitMode.Complex]:
-            self.gait.yaw_rate = rng.uniform(*bounds.yaw)/2
-            #self.gait.yaw_rate = np.clip(rng.normal(0, 0.5), *bounds.yaw)
-
-        #print("Mode: ", mode.name)
-        #print("\tStep Length", self.gait.step_length)
-        #print("\tVelocity", self.gait.target_speed)
-        #print("\tLateral Angle", self.gait.lateral_rotation_angle)
-        #print("\tYaw Rate", self.gait.yaw_rate)
+        # print("Mode: ", mode.name)
+        # print("\tStep Length", self.gait.step_length)
+        # print("\tVelocity", self.gait.target_speed)
+        # print("\tLateral Angle", self.gait.lateral_rotation_angle)
+        # print("\tYaw Rate", self.gait.yaw_rate)
