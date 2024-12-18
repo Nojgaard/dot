@@ -36,8 +36,8 @@ class ModulateGaitTask(Task):
 
         self._rest_joint_angles = model_ik.find_angles().flatten()
 
-        self._arena = BumpyArena()
-        #self._arena = floors.Floor(reflectance=0.0)
+        #self._arena = BumpyArena()
+        self._arena = floors.Floor(reflectance=0.0)
         self._creature_initial_pose = (0, 0, 0.19)
         self._arena.add_free_entity(self.model)
         # self._arena.mjcf_model.worldbody.add('light', pos=(0, 0, 4))
