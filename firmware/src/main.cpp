@@ -24,5 +24,4 @@ void loop() {
     const ServoPacket& servoPacket = comm.consumeServoPacket();
     crtlServo.writeMicroSeconds(servoPacket.microseconds);
   }
-  delay(2);
 }
