@@ -6,7 +6,7 @@
 const char *ssid = "Telenor7748bod";
 const char *password = "77xugJACB";
 
-IPAddress remoteIP(0, 0, 0, 0);
+IPAddress remoteIP = INADDR_NONE;
 IPAddress localIP(10, 0, 0, 88);
 IPAddress gateway(10, 0, 0, 1);
 IPAddress subnet(255, 255, 0, 0);
@@ -52,28 +52,43 @@ bool Comm::connectToController() {
     return false;
   }
 
-  bool foundController = false;
+  setupPacketReceiver();
 
-  udp.onPacket([&foundController](AsyncUDPPacket packet) {
-    if (packet.length() != 4) {
-      Serial.println("Received packet of unexpected size");
-      return;
-    }
-
-    uint8_t* octets = packet.data();
-    remoteIP = IPAddress(octets[0], octets[1], octets[2], octets[3]);
-    foundController = true;
-
-    Serial.print("Found controller with IP:");
-    Serial.println(remoteIP);
-
-    packet.write(0);
-  });
-
-  while (!foundController) {
+  while (!isConnected()) {
     Serial.print(".");
     delay(2000);
   }
 
   return true;
+}
+
+bool Comm::isConnected() { return remoteIP != INADDR_NONE; }
+
+bool Comm::isServoPacketAvailable() { return hasServoPacket; }
+
+bool Comm::isTimedOut() { return (millis() - lastReceivedPacketMs) > timeoutMs; }
+
+const ServoPacket& Comm::consumeServoPacket() {
+  hasServoPacket = false;
+  return lastServoPacket;
+}
+
+void Comm::setupPacketReceiver() {
+  udp.onPacket([this](AsyncUDPPacket &packet) {
+    lastReceivedPacketMs = millis();
+    if (!isConnected()) {
+      remoteIP = packet.remoteIP();
+      Serial.print("Found controller with IP:");
+      Serial.println(remoteIP);
+    }
+
+    if (packet.length() != sizeof(ServoPacket)) {
+      Serial.println("Received ping packet");
+      packet.write(0);
+      return;
+    }
+
+    hasServoPacket = true;
+    memcpy(&lastServoPacket, packet.data(), sizeof(ServoPacket));
+  });
 }

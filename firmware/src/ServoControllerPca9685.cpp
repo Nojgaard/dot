@@ -1,15 +1,15 @@
-#include <servo_controller_pca.h>
+#include <ServoControllerPca9685.h>
+#include <Arduino.h>
 
-// Depending on your servo make, the pulse width min and max may vary, you 
+// Depending on your servo make, the pulse width min and max may vary, you
 // want these to be as small/large as possible without hitting the hard stop
 // for max range. You'll have to tweak them as necessary to match the servos you
 // have!
-#define USMIN  544 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
-#define USMAX  2500 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+#define USMIN 400
+#define USMAX 2700
+#define SERVO_FREQ 50  // Analog servos run at ~50 Hz updates
 
-
-void ServoControllerPca::begin() {
+void ServoControllerPca9685::begin() {
   pwm.begin();
 
   /*
@@ -29,12 +29,29 @@ void ServoControllerPca::begin() {
    * Failure to correctly set the int.osc value will cause unexpected PWM
    * results
    */
-  //pwm.setOscillatorFrequency(27000000);
+  // pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
   delay(10);
 }
 
-void ServoControllerPca::writeMicroSeconds(int servoNum, int us) {
+void ServoControllerPca9685::writeMicroSeconds(int servoNum, int us) {
+  if (us == 0) {  // disable servo
+    pwm.setPin(servoNum, 0);
+  } else {
+    us = constrain(us, USMIN, USMAX);
     pwm.writeMicroseconds(servoNum, us);
+  }
+}
+
+void ServoControllerPca9685::writeMicroSeconds(const int us[Specs::NUM_SERVOS]) {
+  for (int i = 0; i < Specs::NUM_SERVOS; i++) {
+    writeMicroSeconds(i, us[i]);
+  }
+}
+
+void ServoControllerPca9685::detach() {
+  for (int i = 0; i < Specs::NUM_SERVOS; i++) {
+    writeMicroSeconds(i, 0);
+  }
 }
