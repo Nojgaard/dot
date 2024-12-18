@@ -6,11 +6,24 @@
 const char *ssid = "Telenor7748bod";
 const char *password = "77xugJACB";
 
+IPAddress remoteIP(0, 0, 0, 0);
 IPAddress localIP(10, 0, 0, 88);
 IPAddress gateway(10, 0, 0, 1);
 IPAddress subnet(255, 255, 0, 0);
 
 bool Comm::begin() {
+  if (!connectToWifi()) {
+    return false;
+  }
+
+  if (!connectToController()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Comm::connectToWifi() {
   Serial.println("Connecting to wifi");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -28,18 +41,39 @@ bool Comm::begin() {
 
   Serial.print("Connected to wifi with local IP: ");
   Serial.println(WiFi.localIP());
-  
-  if (udp.listen(9999)) {
-    Serial.println("UDP server started");
+  return true;
+}
 
-    // Callback for incoming packets
-    udp.onPacket([](AsyncUDPPacket packet) {
-      Serial.print(", Data: ");
-      Serial.write(packet.data(), packet.length());
-      Serial.println();
+bool Comm::connectToController() {
+  Serial.println("Connecting to controller");
 
-      // Echo the message back to the sender
-      packet.printf("Echo: %s", (char *)packet.data());
-    });
+  if (!udp.listen(9999)) {
+    Serial.println("Could not listen on selected port");
+    return false;
   }
+
+  bool foundController = false;
+
+  udp.onPacket([&foundController](AsyncUDPPacket packet) {
+    if (packet.length() != 4) {
+      Serial.println("Received packet of unexpected size");
+      return;
+    }
+
+    uint8_t* octets = packet.data();
+    remoteIP = IPAddress(octets[0], octets[1], octets[2], octets[3]);
+    foundController = true;
+
+    Serial.print("Found controller with IP:");
+    Serial.println(remoteIP);
+
+    packet.write(0);
+  });
+
+  while (!foundController) {
+    Serial.print(".");
+    delay(2000);
+  }
+
+  return true;
 }
