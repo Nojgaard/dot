@@ -16,6 +16,7 @@ class Quadruped(Entity):
         # self._model = mjcf.from_path(r"assets\model\xml\spot_mini\spot_mini.xml")
         self._model = mjcf.from_path(r"assets\model\spot.xml")
         self._imu = self._model.find("site", "imu")
+        self.joint_ranges = np.array([j.range for j in self._model.find_all("joint")])
 
         for joint in self._model.find_all("joint"):
             if joint.type == "free":

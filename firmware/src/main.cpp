@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <SPI.h>
 #include <Comm.h>
+#include <SPI.h>
 #include <ServoControllerPca9685.h>
 
 Comm comm;
@@ -22,6 +22,14 @@ void loop() {
 
   if (comm.isServoPacketAvailable()) {
     const ServoPacket& servoPacket = comm.consumeServoPacket();
+
+    Serial.println("Received servo packet!");
+    for (int i = 0; i < Specs::NUM_SERVOS; i++) {
+      Serial.print(servoPacket.microseconds[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
+
     crtlServo.writeMicroSeconds(servoPacket.microseconds);
   }
 }
