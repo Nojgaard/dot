@@ -31,14 +31,14 @@ class RobotController:
         )
         self.robot_gait = Gait(self.robot_ik.foot_points)
 
-    async def launch(self, mode: Mode, callback: Callable[[Self], None], fps: int = 30):
+    async def launch_control_loop(self, mode: Mode, callback: Callable[[Self], None], fps: int = 30):
         frame_interval = 1.0 / fps
-        await self._comm.connect()
         prev_time = time.time()
-        while True:
+        while True:           
             current_time = time.time()
             dt = current_time - prev_time
-            callback()
+            sensor_readings = await self._comm.read_sensors()
+            callback(sensor_readings)
             # work....i
 
             elapsed_frame_time = time.time() - current_time
@@ -46,6 +46,15 @@ class RobotController:
                 lambda: time.sleep(max(0, frame_interval - elapsed_frame_time))
             )
             prev_time = current_time
+
+    async def launch(self, mode: Mode, callback: Callable[[Self], None], fps: int = 30):
+        await self._comm.connect()
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(self.launch_control_loop(mode, callback, fps))
+            tg.create_task(self._comm.listen_to_sensor_readings())
+
+    async def read_sensors(self):
+        return await self._comm.read_sensors()
 
     @classmethod
     async def create(cls):

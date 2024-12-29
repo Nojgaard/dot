@@ -11,7 +11,11 @@ IPAddress localIP(10, 0, 0, 88);
 IPAddress gateway(10, 0, 0, 1);
 IPAddress subnet(255, 255, 0, 0);
 
+const int COMM_PORT = 9999;
+const unsigned long SENSOR_DELAY_MS = 33;
+
 bool Comm::begin() {
+  lastSentSensorPacketMs = 0;
   if (!connectToWifi()) {
     return false;
   }
@@ -47,7 +51,7 @@ bool Comm::connectToWifi() {
 bool Comm::connectToController() {
   Serial.println("Connecting to controller");
 
-  if (!udp.listen(9999)) {
+  if (!udp.listen(COMM_PORT)) {
     Serial.println("Could not listen on selected port");
     return false;
   }
@@ -66,9 +70,11 @@ bool Comm::isConnected() { return remoteIP != INADDR_NONE; }
 
 bool Comm::isServoPacketAvailable() { return hasServoPacket; }
 
-bool Comm::isTimedOut() { return (millis() - lastReceivedPacketMs) > timeoutMs; }
+bool Comm::isTimedOut() {
+  return (millis() - lastReceivedPacketMs) > timeoutMs;
+}
 
-const ServoPacket& Comm::consumeServoPacket() {
+const ServoPacket &Comm::consumeServoPacket() {
   hasServoPacket = false;
   return lastServoPacket;
 }
@@ -84,6 +90,10 @@ void Comm::setupPacketReceiver() {
 
     if (packet.length() != sizeof(ServoPacket)) {
       Serial.println("Received ping packet");
+      Serial.println(packet.remoteIP());
+      Serial.println(packet.remotePort());
+      Serial.println(packet.localIP());
+      Serial.println(packet.localPort());
       packet.write(0);
       return;
     }
@@ -91,4 +101,19 @@ void Comm::setupPacketReceiver() {
     hasServoPacket = true;
     memcpy(&lastServoPacket, packet.data(), sizeof(ServoPacket));
   });
+}
+
+void Comm::sendSensorState(const SensorPacket &packet) {
+  if (!isConnected()) {
+    return;
+  }
+
+  unsigned long currentTimeMs = millis();
+  if ((currentTimeMs - lastSentSensorPacketMs) < SENSOR_DELAY_MS) {
+    return;
+  }
+
+  lastSentSensorPacketMs = currentTimeMs;
+
+  size_t res = udp.writeTo((uint8_t *)&packet, sizeof(SensorPacket), remoteIP, COMM_PORT);
 }

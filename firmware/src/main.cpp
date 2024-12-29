@@ -2,14 +2,22 @@
 #include <Comm.h>
 #include <SPI.h>
 #include <ServoControllerPca9685.h>
+#include <BatterySensor.h>
 
 Comm comm;
 ServoControllerPca9685 crtlServo;
+BatterySensor batSensor;
+SensorPacket state;
 
 void setup() {
   Serial.begin(9600);
   comm.begin();
   crtlServo.begin();
+  batSensor.begin();
+}
+
+void updateSensorState() {
+  state.batteryVoltage = batSensor.readVoltage();
 }
 
 void loop() {
@@ -20,16 +28,12 @@ void loop() {
     return;
   }
 
+  updateSensorState();
+  comm.sendSensorState(state);
+
   if (comm.isServoPacketAvailable()) {
-    const ServoPacket& servoPacket = comm.consumeServoPacket();
-
     Serial.println("Received servo packet!");
-    for (int i = 0; i < Specs::NUM_SERVOS; i++) {
-      Serial.print(servoPacket.microseconds[i]);
-      Serial.print(" ");
-    }
-    Serial.println();
-
+    const ServoPacket& servoPacket = comm.consumeServoPacket();
     crtlServo.writeMicroSeconds(servoPacket.microseconds);
   }
 }

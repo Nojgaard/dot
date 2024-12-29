@@ -3,6 +3,7 @@ import asyncio
 import dearpygui.dearpygui as dpg
 import numpy as np
 
+from dot.real.comm import SensorReadings
 from dot.real.robot_controller import RobotController
 
 
@@ -28,6 +29,9 @@ class CalibrateGui:
                 default_value=2500, min_value=2400, max_value=2700
             )
 
+            dpg.add_text("Orientation")
+            self.servo_orientation_combo = dpg.add_combo(("Left", "Right"), default_value="Left")
+
             dpg.add_text("Joint Type")
             self.joint_type_combo = dpg.add_combo(
                 ("Wrist", "Arm", "Shoulder"), default_value="Wrist"
@@ -36,6 +40,11 @@ class CalibrateGui:
             dpg.add_button(
                 label="Set Nominal Joint Angle", callback=self.set_nominal_joint_angle
             )
+
+            dpg.add_text("Connect")
+            self.connect_checkbox = dpg.add_checkbox(default_value=False)
+
+            self._voltage_text = dpg.add_text("Voltage: None")
 
         dpg.setup_dearpygui()
         dpg.show_viewport()
@@ -47,16 +56,32 @@ class CalibrateGui:
         joint_type = dpg.get_value(self.joint_type_combo)
         type2idx = {"Wrist": 2, "Arm": 1, "Shoulder": 0}
 
-        joint_ranges = self._controller.robot_specs.joint_ranges[type2idx[joint_type]].reshape((1, 2))
+        joint_ranges = self._controller.robot_specs.joint_ranges[
+            type2idx[joint_type]
+        ].reshape((1, 2))
         angles = np.array([0])
-        servo_angle = self._controller.servo_driver.joint_to_servo_angle(angles, joint_ranges)[0]
+        orientation: str = dpg.get_value(self.servo_orientation_combo)
+        invert = [False] * 12 if orientation == "Left" else [True] * 12
+        servo_angle = self._controller.servo_driver.joint_to_servo_angle(
+            angles, joint_ranges, invert
+        )[0]
+
         dpg.set_value(self.servo_angle_slider, int(np.round(servo_angle)))
 
-    def update_servos(self):
+    def update_servos(self, sensor_readings: SensorReadings):
+        dpg.set_value(
+            self._voltage_text, f"Voltage: {sensor_readings.battery_voltage:.2f}"
+        )
+
+        send_commands = dpg.get_value(self.connect_checkbox)
+        if not send_commands:
+            return
+
         angle: float = dpg.get_value(self.servo_angle_slider)
         min_us: float = dpg.get_value(self.servo_min_us_slider)
         max_us: float = dpg.get_value(self.servo_max_us_slider)
 
         print(f"Updating Servos: angle={angle}, ({min_us}, {max_us})")
-        self._controller.servo_driver.update_calibration((min_us, max_us))
+        driver = self._controller.servo_driver
+        driver.calibration.bounds_pwm_ms = (min_us, max_us)
         self._controller.servo_driver.set_servo_angles([angle] * 12)

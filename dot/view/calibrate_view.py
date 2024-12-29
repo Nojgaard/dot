@@ -11,9 +11,10 @@ async def main():
     await asyncio.sleep(0.5)
     controller_task = asyncio.create_task(
         controller.launch(
-            RobotController.Mode.Calibrate, callback=gui.update_servos, fps=10
+            RobotController.Mode.Calibrate, callback=gui.update_servos, fps=20
         )
     )
+
     done, pending = await asyncio.wait(
         [gui_task, controller_task], return_when=asyncio.FIRST_COMPLETED
     )
