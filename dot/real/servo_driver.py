@@ -44,11 +44,8 @@ class ServoDriver:
         self,
         joint_angles: NDArray[np.floating],
         joint_ranges: NDArray[np.floating],
-        joint_invert: NDArray[np.bool],
     ):
-        servo_angles = self.joint_to_servo_angle(
-            joint_angles, joint_ranges, joint_invert
-        )
+        servo_angles = self.joint_to_servo_angle(joint_angles, joint_ranges)
         self.set_servo_angles(servo_angles)
 
     def joint_to_servo_angle(

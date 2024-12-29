@@ -14,6 +14,7 @@ from dot.sim.quadruped import Quadruped
 class RobotController:
     class Mode(Enum):
         Calibrate = 0
+        Normal = 1
 
     def __init__(self, comm: Comm):
         self._comm = comm
@@ -31,15 +32,23 @@ class RobotController:
         )
         self.robot_gait = Gait(self.robot_ik.foot_points)
 
-    async def launch_control_loop(self, mode: Mode, callback: Callable[[Self], None], fps: int = 30):
+    async def launch_control_loop(
+        self, mode: Mode, callback: Callable[[Self], None], fps: int = 20
+    ):
         frame_interval = 1.0 / fps
         prev_time = time.time()
-        while True:           
+        while True:
             current_time = time.time()
             dt = current_time - prev_time
             sensor_readings = await self._comm.read_sensors()
-            callback(sensor_readings)
-            # work....i
+            send_to_robot = callback(sensor_readings)
+
+            if send_to_robot and mode == RobotController.Mode.Normal:
+                foot_positions = self.robot_gait.compute_foot_positions(dt)
+                joint_angles = self.robot_ik.find_angles(foot_positions)
+                self.servo_driver.set_joint_angles(
+                    joint_angles.flatten(), self.robot_specs.joint_ranges
+                )
 
             elapsed_frame_time = time.time() - current_time
             await asyncio.to_thread(
