@@ -7,7 +7,7 @@ from dm_control.mujoco import Physics
 import dm_env.specs
 
 from dot.control.gait import Gait
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 from dot.sim.bumpy_arena import BumpyArena
 from dot.sim.gait_input_controller import GaitInputController
 from dot.sim.quadruped import Quadruped
@@ -24,7 +24,7 @@ class ModulateGaitTask(Task):
     def __init__(
         self,
         model: Quadruped,
-        model_ik: QuadropedIK,
+        model_ik: RobotIK,
         model_gait: Gait,
         input_controller: GaitInputController,
     ) -> None:
@@ -107,7 +107,9 @@ class ModulateGaitTask(Task):
         foot_positions += foot_bias
 
         joint_angles = self.model_ik.find_angles(foot_positions)
-        super().before_step(physics, joint_angles.flatten(), random_state)
+
+        joint_angles = joint_angles.flatten()[:len(self.model.actuators)]
+        super().before_step(physics, joint_angles, random_state)
 
     def after_step(self, phsyics, random_state):
         if self.enable_input_controller:

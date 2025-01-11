@@ -4,10 +4,11 @@ import dm_env
 from dm_env import specs
 
 from dot.control.gait import Gait
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 from dot.sim.gait_input_controller import GaitInputController
 from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.sim.quadruped import Quadruped
+from dot.sim.robot import Robot
 
 
 def _flatten_spec(spec):
@@ -101,9 +102,8 @@ class LearningEnvironment(dm_env.Environment):
         return self._env.close()
 
 
-def modulate_gait_env(time_limit=float('inf'), time_per_mode=5):
-    model = Quadruped()
-    model_ik = QuadropedIK(
+def modulate_gait_env(model: Robot = Quadruped(), time_limit=float('inf'), time_per_mode=5):
+    model_ik = RobotIK(
         model.body_length,
         model.body_width,
         model.max_height * 0.7,

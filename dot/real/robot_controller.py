@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 from dot.real.comm import Comm
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 from dot.control.gait import Gait
 from dot.real.servo_driver import ServoDriver
 from dot.sim.quadruped import Quadruped
@@ -21,7 +21,7 @@ class RobotController:
         self.servo_driver = ServoDriver(self._comm)
 
         self.robot_specs = Quadruped()
-        self.robot_ik = QuadropedIK(
+        self.robot_ik = RobotIK(
             self.robot_specs.body_length,
             self.robot_specs.body_width,
             self.robot_specs.max_height * 0.7,

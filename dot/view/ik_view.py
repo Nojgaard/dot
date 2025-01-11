@@ -3,7 +3,7 @@ from matplotlib import animation
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 from dot.sim.quadruped import Quadruped
 from dot.view.control_gui import ControlGui
 
@@ -12,7 +12,7 @@ def main():
     gui = ControlGui()
 
     spot = Quadruped()
-    ik_model = QuadropedIK(
+    ik_model = RobotIK(
         spot.body_length,
         spot.body_width,
         spot.max_height * 0.7,

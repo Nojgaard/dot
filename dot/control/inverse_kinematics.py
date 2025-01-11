@@ -48,7 +48,7 @@ class LegIK:
         return theta_h, theta_s, theta_w
 
 
-class QuadropedIK:
+class RobotIK:
     def __init__(
         self,
         length: float,

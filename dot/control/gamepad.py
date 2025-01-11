@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from dot.control.gait import Gait
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 from multiprocessing import Process, Value
 from scipy.spatial.transform import Rotation
 
@@ -89,7 +89,7 @@ class Gamepad:
                 elif event.code == 'BTN_TRIGGER_HAPPY4':
                     self.down_dpad = event.state
 
-    def update_robot_inputs(self, robot_ik: QuadropedIK, robot_gait: Gait):
+    def update_robot_inputs(self, robot_ik: RobotIK, robot_gait: Gait):
         left_axis = np.array([self.left_hat_x, self.left_hat_y])
         right_axis = np.array([self.right_hat_x, self.right_hat_y])
         robot_ik.translation[0] = -0.06

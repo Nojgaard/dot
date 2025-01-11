@@ -12,6 +12,10 @@ from dot.sim.robot import Robot
 from dot.sim.rotation import quat_to_euler
 
 
-class Quadruped(Robot):
+class Biped(Robot):
     def __init__(self):
-        super().__init__(r"assets\model\spot.xml")
+        super().__init__(r"assets\model\biped.xml")
+
+    @property
+    def body_length(self) -> float:
+        return 0

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dot.control.gait import Gait
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 from dot.sim.quadruped import Quadruped
 from dot.view.control_gui import ControlGui
 import time
@@ -32,7 +32,7 @@ def update_leg_line_plots(model_gait: Gait, leg_line_plots: list[list[Any]]):
 def main():
     model = Quadruped()
 
-    model_ik = QuadropedIK(
+    model_ik = RobotIK(
         model.body_length,
         model.body_width,
         model.max_height * 0.7,

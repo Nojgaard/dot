@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
 from dot.control.gait import Gait
 from dot.control.gamepad import Gamepad
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
 
 
 class ControlInput:
@@ -60,7 +60,7 @@ def _open_gui_window(enable_controller, use_gamepad, control_inputs: dict[str, l
 
 
 class ControlGui:
-    def __init__(self, model_ik: QuadropedIK, gait: Gait, enable_controller=False):
+    def __init__(self, model_ik: RobotIK, gait: Gait, enable_controller=False):
         self._enable_controller = Value("i", int(enable_controller))
         self._use_gamepad = Value("i", int(False))
         orientation = model_ik.rotation.as_euler("XYZ", degrees=False)
@@ -144,7 +144,7 @@ class ControlGui:
     def launch(self):
         self._process.start()
 
-    def update_model(self, model_ik: QuadropedIK, model_gait: Gait):
+    def update_model(self, model_ik: RobotIK, model_gait: Gait):
         if self.enable_controller:
             return
         if self._use_gamepad.value:

@@ -5,7 +5,8 @@ from dm_control import composer
 
 from dot.control.gait import Gait
 from dot.control.gamepad import Gamepad
-from dot.control.inverse_kinematics import QuadropedIK
+from dot.control.inverse_kinematics import RobotIK
+from dot.sim.biped import Biped
 from dot.sim.quadruped import Quadruped
 from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.view.control_gui import ControlGui
@@ -14,7 +15,8 @@ from dot.sim.environments import modulate_gait_env
 
 
 def main():
-    env = modulate_gait_env()
+    robot = Quadruped()
+    env = modulate_gait_env(robot)
     task: ModulateGaitTask = env.task
     model_ik = env.task.model_ik
     model_gait = env.task.model_gait
