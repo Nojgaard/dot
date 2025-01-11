@@ -53,7 +53,7 @@ class Gait:
         target_speed: float = 0.1,
         lateral_rotation_angle: float = 0,
         yaw_rate: float = 0,
-        swing_time: float = 0.15,
+        swing_time: float = 0.2,
         phase_lag: tuple[float, float, float, float] = (0, 0.5, 0.5, 0),
         clearance_height: float = 0.03,
         penetration_depth: float = 0.005,
@@ -75,12 +75,12 @@ class Gait:
         )
         self._prev_foot_pose = self.foot_rest_pose.copy()
 
-    # def stance_time(self) -> float:
+    #def stance_time(self) -> float:
     #    return min(self.swing_time * 1.3, 2 * abs(self.step_length / self.target_speed))
 
     def stance_time(self) -> float:
         velocity = max(abs(self.target_speed), abs(self.yaw_rate))
-        return self.swing_time * (1 - velocity / 3)
+        return self.swing_time * (1 - velocity / 2.0)
 
     def stride_time(self) -> float:
         return self.swing_time + self.stance_time()

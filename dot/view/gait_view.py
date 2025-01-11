@@ -44,7 +44,7 @@ def main():
     model_gait = Gait(model_ik.foot_points)
     model_gait_curves = Gait(model_ik.foot_points)
 
-    gui = ControlGui()
+    gui = ControlGui(model_ik, model_gait)
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
 

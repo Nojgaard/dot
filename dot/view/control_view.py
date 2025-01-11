@@ -1,8 +1,10 @@
+import time
 import dm_control.viewer as viewer
 import numpy as np
 from dm_control import composer
 
 from dot.control.gait import Gait
+from dot.control.gamepad import Gamepad
 from dot.control.inverse_kinematics import QuadropedIK
 from dot.sim.quadruped import Quadruped
 from dot.sim.modulate_gait_task import ModulateGaitTask
@@ -34,7 +36,6 @@ def main():
 
     gui.launch()
     viewer.launch(env, update_gui)
-
 
 if __name__ == "__main__":
     main()

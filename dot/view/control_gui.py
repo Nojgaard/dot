@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
 from dot.control.gait import Gait
+from dot.control.gamepad import Gamepad
 from dot.control.inverse_kinematics import QuadropedIK
 
 
@@ -31,14 +32,19 @@ def _add_slider(name, ctrl_value, value_range):
     )
 
 
-def _open_gui_window(enable_controller, control_inputs: dict[str, list[ControlInput]]):
+def _open_gui_window(enable_controller, use_gamepad, control_inputs: dict[str, list[ControlInput]]):
     dpg.create_context()
     dpg.create_viewport(title="Control Inputs", width=1200, height=600)
 
     with dpg.window(tag="Primary Window"):
         dpg.add_checkbox(
-            label="Enable Controller",
+            label="Enable Open Loop Controller",
             user_data=enable_controller,
+            callback=_update_value,
+        )
+        dpg.add_checkbox(
+            label="Use Gamepad",
+            user_data=use_gamepad,
             callback=_update_value,
         )
         for title, inputs in control_inputs.items():
@@ -56,6 +62,7 @@ def _open_gui_window(enable_controller, control_inputs: dict[str, list[ControlIn
 class ControlGui:
     def __init__(self, model_ik: QuadropedIK, gait: Gait, enable_controller=False):
         self._enable_controller = Value("i", int(enable_controller))
+        self._use_gamepad = Value("i", int(False))
         orientation = model_ik.rotation.as_euler("XYZ", degrees=False)
         self._control_inputs = {
             "Body Translation": [
@@ -85,9 +92,11 @@ class ControlGui:
             target=_open_gui_window,
             kwargs={
                 "enable_controller": self._enable_controller,
+                "use_gamepad": self._use_gamepad,
                 "control_inputs": self._control_inputs,
             },
         )
+        self._gamepad = Gamepad()
 
     @property
     def ctrl_translation(self) -> NDArray[np.float64]:
@@ -137,6 +146,9 @@ class ControlGui:
 
     def update_model(self, model_ik: QuadropedIK, model_gait: Gait):
         if self.enable_controller:
+            return
+        if self._use_gamepad.value:
+            self._gamepad.update_robot_inputs(model_ik, model_gait)
             return
 
         model_ik.translation = self.ctrl_translation
