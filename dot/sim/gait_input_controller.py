@@ -15,8 +15,8 @@ class GaitMode(Enum):
 @dataclass
 class InputBounds:
     velocity = (0.1, 0.5)
-    lateral = (-np.pi / 4.0, np.pi / 4.0)
-    yaw = (-0.5, 0.5)
+    lateral = (-np.pi / 8.0, np.pi / 8.0)
+    yaw = (-0.2, 0.2)
 
 
 class GaitInputController:
@@ -61,8 +61,8 @@ class GaitInputController:
         if mode == GaitMode.RampUp:
             return
         elif mode == GaitMode.Forward:
-            direction = 1 if rng.random() > 0.25 else -1
-            self.gait.target_speed = rng.uniform(*bounds.velocity)
+            direction = 1 if rng.random() > 0.20 else -1
+            self.gait.target_speed = direction * rng.uniform(*bounds.velocity)
         elif mode == GaitMode.Rotate:
             self.gait.target_speed = 0.3
             self.gait.yaw_rate = rng.uniform(*bounds.yaw)
@@ -70,8 +70,8 @@ class GaitInputController:
             self.gait.target_speed = 0.3
             self.gait.lateral_rotation_angle = rng.uniform(*bounds.lateral)
         elif mode == GaitMode.Complex:
-            direction = 1 if rng.random() > 0.25 else -1
-            self.gait.target_speed = rng.uniform(*bounds.velocity)
+            direction = 1 if rng.random() > 0.20 else -1
+            self.gait.target_speed = direction * rng.uniform(*bounds.velocity)
             self.gait.yaw_rate = rng.uniform(*bounds.yaw)
             self.gait.lateral_rotation_angle = rng.uniform(*bounds.lateral)
         else:

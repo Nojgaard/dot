@@ -116,14 +116,14 @@ class RobotObservables(Observables):
             "sensordata", self._entity.mjcf_model.sensor.accelerometer
         )
 
+    def read_orientation(self, physics):
+        framequat_element = self._entity.mjcf_model.sensor.framequat
+        quat = physics.bind(framequat_element).sensordata
+        return quat_to_euler(quat)[:2]
+
     @composer.observable
     def attitude(self):
-        def read_orientation(physics):
-            framequat_element = self._entity.mjcf_model.sensor.framequat
-            quat = physics.bind(framequat_element).sensordata
-            return quat_to_euler(quat)[:2]
-
-        return observable.Generic(read_orientation)
+        return observable.Generic(self.read_orientation)
 
     @composer.observable
     def sensors_framequat(self):

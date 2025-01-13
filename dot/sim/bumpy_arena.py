@@ -8,7 +8,7 @@ mjlib = mjbindings.mjlib
 
 # Constants related to terrain generation.
 _TERRAIN_SMOOTHNESS = .8  # 0.0: maximally bumpy; 1.0: completely smooth.
-_TERRAIN_BUMP_SCALE = .2  # Spatial scale of terrain bumps (in meters).
+_TERRAIN_BUMP_SCALE = .1  # Spatial scale of terrain bumps (in meters).
 
 
 class BumpyArena(composer.Arena):
@@ -22,7 +22,8 @@ class BumpyArena(composer.Arena):
         name='terrain',
         nrow=201,
         ncol=201,
-        size=(6, 6, 0.5, 0.1))
+        # (radius_x, radius_y, elevation_z, base_z)
+        size=(6, 6, 0.08, 0.1))
 
     self._terrain_geom = self._mjcf_root.worldbody.add(
         'geom',
@@ -51,17 +52,19 @@ class BumpyArena(composer.Arena):
 
       # Sinusoidal bowl shape.
       row_grid, col_grid = np.ogrid[-1:1:res*1j, -1:1:res*1j]
-      radius = np.clip(np.sqrt(col_grid**2 + row_grid**2), 0, 1)
+      radius = np.clip(np.sqrt(col_grid**2 + row_grid**2), -1, 1)
       bowl_shape = .5 - np.cos(2*np.pi*radius)/2
 
       # Random smooth bumps.
       terrain_size = 2 * physics.bind(self._hfield).size[0]
       bump_res = int(terrain_size / _TERRAIN_BUMP_SCALE)
-      bumps = random_state.uniform(_TERRAIN_SMOOTHNESS, 1, (bump_res, bump_res))
+      bumps = random_state.uniform(0, 0.4, (bump_res, bump_res))
       smooth_bumps = ndimage.zoom(bumps, res / float(bump_res))
 
+      smooth_bumps[abs(radius) < 0.08] = 0
+
       # Terrain is elementwise product.
-      terrain = bowl_shape * smooth_bumps
+      terrain = smooth_bumps
       start_idx = physics.bind(self._hfield).adr
       physics.model.hfield_data[start_idx:start_idx+res**2] = terrain.ravel()
 

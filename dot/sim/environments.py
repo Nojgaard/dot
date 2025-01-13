@@ -1,3 +1,5 @@
+from enum import Enum
+import pickle
 import numpy as np
 from dm_control import composer
 import dm_env
@@ -5,10 +7,31 @@ from dm_env import specs
 
 from dot.control.gait import Gait
 from dot.control.inverse_kinematics import RobotIK
+from dot.sim.bumpy_arena import BumpyArena
 from dot.sim.gait_input_controller import GaitInputController
 from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.sim.quadruped import Quadruped
 from dot.sim.robot import Robot
+from dm_control.locomotion.arenas import floors
+
+
+def _scale_action(action: np.ndarray, spec: specs.Array):
+    """Converts a single canonical action back to the given action spec."""
+    # Get scale and offset of output action spec.
+    scale = spec.maximum - spec.minimum
+    offset = spec.minimum
+
+    # Maybe clip the action.
+    action = np.clip(action, -1.0, 1.0)
+
+    # Map action to [0, 1].
+    action = 0.5 * (action + 1.0)
+
+    # Map action to [spec.minimum, spec.maximum].
+    action *= scale
+    action += offset
+
+    return action
 
 
 def _flatten_spec(spec):
@@ -58,6 +81,11 @@ class LearningEnvironment(dm_env.Environment):
         self._env = env
         self._observation_spec = _flatten_spec(env.observation_spec().values())
 
+        x = np.zeros(env.action_spec().shape)
+        self._norm_action_spec = specs.BoundedArray(
+            x.shape, np.float32, x - 1, x + 1, "norm action"
+        )
+
     def __getattr__(self, attr: str):
         # Delegates attribute calls to the wrapped environment.
         return getattr(self._env, attr)
@@ -77,17 +105,17 @@ class LearningEnvironment(dm_env.Environment):
         return self._env
 
     def step(self, action) -> dm_env.TimeStep:
-        timestep = self._env.step(action)
-        return timestep._replace(
-            observation=_flatten_obs(timestep.observation))
+        scaled_action = _scale_action(action, self._env.action_spec())
+        timestep = self._env.step(scaled_action)
+        return timestep._replace(observation=_flatten_obs(timestep.observation))
 
     def reset(self) -> dm_env.TimeStep:
         timestep = self._env.reset()
-        return timestep._replace(
-            observation=_flatten_obs(timestep.observation))
+        return timestep._replace(observation=_flatten_obs(timestep.observation))
 
     def action_spec(self):
-        return self._env.action_spec()
+        return self._norm_action_spec
+        # return self._env.action_spec()
 
     def discount_spec(self):
         return self._env.discount_spec()
@@ -102,7 +130,17 @@ class LearningEnvironment(dm_env.Environment):
         return self._env.close()
 
 
-def modulate_gait_env(model: Robot = Quadruped(), time_limit=float('inf'), time_per_mode=5):
+class ArenaType(Enum):
+    Flat = floors.Floor(reflectance=0.0)
+    Bumpy = BumpyArena()
+
+
+def modulate_gait_env(
+    model: Robot = Quadruped(),
+    time_limit=float("inf"),
+    time_per_mode=5,
+    arena_type: ArenaType = ArenaType.Flat,
+):
     model_ik = RobotIK(
         model.body_length,
         model.body_width,
@@ -110,16 +148,16 @@ def modulate_gait_env(model: Robot = Quadruped(), time_limit=float('inf'), time_
         model.hip_offset,
         model.shoulder_length,
         model.wrist_length,
-        translation=np.array([-0.035, 0, 0])
+        translation=np.array([-0.035, 0, 0]),
     )
     model_gait = Gait(model_ik.foot_points)
     input_controller = GaitInputController(model_gait, time_per_mode=time_per_mode)
-    task = ModulateGaitTask(model, model_ik, model_gait, input_controller)
+    task = ModulateGaitTask(model, model_ik, model_gait, input_controller, arena_type.value)
     env = composer.Environment(
         task,
         time_limit,
         random_state=np.random.RandomState(42),
         strip_singleton_obs_buffer_dim=True,
     )
-    #return env
+    # return env
     return LearningEnvironment(env)
