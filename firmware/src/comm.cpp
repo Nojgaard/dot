@@ -103,7 +103,7 @@ void Comm::setupPacketReceiver() {
   });
 }
 
-void Comm::sendSensorState(const SensorPacket &packet) {
+void Comm::sendSensorState(const TelemetryPacket &packet) {
   if (!isConnected()) {
     return;
   }
@@ -115,5 +115,5 @@ void Comm::sendSensorState(const SensorPacket &packet) {
 
   lastSentSensorPacketMs = currentTimeMs;
 
-  size_t res = udp.writeTo((uint8_t *)&packet, sizeof(SensorPacket), remoteIP, COMM_PORT);
+  size_t res = udp.writeTo((uint8_t *)&packet, sizeof(TelemetryPacket), remoteIP, COMM_PORT);
 }

@@ -5,6 +5,7 @@ class BatterySensor {
   void begin();
   float readVoltage();
   int readPercentage();
+  float readCurrent();
 
  private:
 };

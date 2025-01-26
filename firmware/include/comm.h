@@ -6,15 +6,16 @@ struct ServoPacket {
   int microseconds[12];
 };
 
-struct SensorPacket {
+struct TelemetryPacket {
   float batteryVoltage;
+  float batteryCurrent;
 };
 
 class Comm {
  public:
   bool begin();
   const ServoPacket& consumeServoPacket();
-  void sendSensorState(const SensorPacket& packet);
+  void sendSensorState(const TelemetryPacket& packet);
   bool isServoPacketAvailable();
   bool isConnected();
   bool isTimedOut();

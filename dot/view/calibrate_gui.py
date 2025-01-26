@@ -45,6 +45,7 @@ class CalibrateGui:
             self.connect_checkbox = dpg.add_checkbox(default_value=False)
 
             self._voltage_text = dpg.add_text("Voltage: None")
+            self._current_text = dpg.add_text("Current: None")
 
         dpg.setup_dearpygui()
         dpg.show_viewport()
@@ -71,6 +72,9 @@ class CalibrateGui:
     def update_servos(self, sensor_readings: SensorReadings):
         dpg.set_value(
             self._voltage_text, f"Voltage: {sensor_readings.battery_voltage:.2f}"
+        )
+        dpg.set_value(
+            self._current_text, f"Current: {sensor_readings.battery_current:.2f}"
         )
 
         send_commands = dpg.get_value(self.connect_checkbox)

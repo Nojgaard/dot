@@ -8,12 +8,13 @@ import copy
 @dataclass
 class SensorReadings:
     battery_voltage: float
+    battery_current: float
 
 class Comm:
     def __init__(self, socket: asyncudp.Socket):
         self._socket = socket
         self._is_connected = False
-        self._sensor_readings = SensorReadings(-1)
+        self._sensor_readings = SensorReadings(-1, -1)
         self._sensor_lock = asyncio.Lock()
 
     async def connect(self):
@@ -40,7 +41,7 @@ class Comm:
     async def listen_to_sensor_readings(self):
         while True:
             data, addr = await self._socket.recvfrom()
-            unpacked_data = struct.unpack("f", data)
+            unpacked_data = struct.unpack("ff", data)
             async with self._sensor_lock:
                 self._sensor_readings = SensorReadings(*unpacked_data)
 
