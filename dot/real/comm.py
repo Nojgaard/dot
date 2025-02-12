@@ -5,16 +5,18 @@ import struct
 import numpy as np
 import copy
 
-@dataclass
 class SensorReadings:
-    battery_voltage: float
-    battery_current: float
+    def __init__(self, packet: list[float]):
+        self.battery_voltage = packet[0]
+        self.battery_current = packet[1]
+        self.orientation = np.array(packet[2:5])
+        self.acceleration = np.array(packet[5:8])
 
 class Comm:
     def __init__(self, socket: asyncudp.Socket):
         self._socket = socket
         self._is_connected = False
-        self._sensor_readings = SensorReadings(-1, -1)
+        self._sensor_readings = SensorReadings([-1] * 8)
         self._sensor_lock = asyncio.Lock()
 
     async def connect(self):
@@ -41,9 +43,9 @@ class Comm:
     async def listen_to_sensor_readings(self):
         while True:
             data, addr = await self._socket.recvfrom()
-            unpacked_data = struct.unpack("ff", data)
+            unpacked_data = struct.unpack("8f", data)
             async with self._sensor_lock:
-                self._sensor_readings = SensorReadings(*unpacked_data)
+                self._sensor_readings = SensorReadings(unpacked_data)
 
     async def read_sensors(self):
         async with self._sensor_lock:

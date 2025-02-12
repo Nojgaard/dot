@@ -16,7 +16,7 @@ from dot.sim.environments import ArenaType, modulate_gait_env
 
 def main():
     robot = Quadruped()
-    env = modulate_gait_env(robot, arena_type=ArenaType.Bumpy)
+    env = modulate_gait_env(robot, arena_type=ArenaType.Flat)
     task: ModulateGaitTask = env.task
     model_ik = env.task.model_ik
     model_gait = env.task.model_gait

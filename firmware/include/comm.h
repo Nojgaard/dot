@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AsyncUDP.h>
+#include <helper_3dmath.h>
 
 struct ServoPacket {
   int microseconds[12];
@@ -9,6 +10,8 @@ struct ServoPacket {
 struct TelemetryPacket {
   float batteryVoltage;
   float batteryCurrent;
+  VectorFloat orientation;
+  VectorFloat acceleration;
 };
 
 class Comm {

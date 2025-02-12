@@ -26,7 +26,7 @@ class CalibrateGui:
 
             dpg.add_text("Max MS PWM")
             self.servo_max_us_slider = dpg.add_slider_int(
-                default_value=2500, min_value=2400, max_value=2700
+                default_value=2650, min_value=2400, max_value=2700
             )
 
             dpg.add_text("Orientation")
@@ -63,8 +63,9 @@ class CalibrateGui:
         angles = np.array([0])
         orientation: str = dpg.get_value(self.servo_orientation_combo)
         invert = [False] * 12 if orientation == "Left" else [True] * 12
+        self._controller.servo_driver.calibration.invert_servo_angle = invert
         servo_angle = self._controller.servo_driver.joint_to_servo_angle(
-            angles, joint_ranges, invert
+            angles, joint_ranges
         )[0]
 
         dpg.set_value(self.servo_angle_slider, int(np.round(servo_angle)))

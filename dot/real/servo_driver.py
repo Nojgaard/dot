@@ -26,7 +26,7 @@ class ServoDriver:
             True,
             True,
         )
-        servo_angle_bias = (0, 0, 0, 0, 0, 0, 5, 0, 0, -5, 0, 0)
+        servo_angle_bias = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     def __init__(self, comm: Comm):
         self._comm = comm

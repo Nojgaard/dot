@@ -4,24 +4,28 @@
 #include <ServoControllerPca9685.h>
 #include <ServoControllerDirect.h>
 #include <BatterySensor.h>
+#include <IMU.h>
 
 Comm comm;
 ServoControllerPca9685 crtlServo;
 BatterySensor batSensor;
 TelemetryPacket telemetry;
+IMU imu;
 
 void setup() {
   Serial.begin(9600);
   comm.begin();
   crtlServo.begin();
   batSensor.begin();
+  imu.begin();
 }
 
 void updateSensorState() {
   telemetry.batteryVoltage = batSensor.readVoltage();
   telemetry.batteryCurrent = batSensor.readCurrent();
-  Serial.println(telemetry.batteryVoltage);
-  Serial.println(telemetry.batteryCurrent);
+  imu.read(telemetry.orientation, telemetry.acceleration);
+  //Serial.println(telemetry.batteryVoltage);
+  //Serial.println(telemetry.batteryCurrent);
 }
 
 void loop() {
