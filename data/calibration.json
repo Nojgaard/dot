@@ -1,0 +1,24 @@
+{
+    "servo": [
+        {
+            "id": 1,
+            "pwm_range": [400, 2473],
+            "degree_bias": 0
+        },
+        {
+            "id": 2,
+            "pwm_range": [459, 2570],
+            "degree_bias": 0 
+        },
+        {
+            "id": 8,
+            "pwm_range": [430, 2545],
+            "degree_bias": 0
+        },
+        {
+            "id": 7,
+            "pwm_range": [560, 2660],
+            "degree_bias": 0
+        }
+    ]
+}
