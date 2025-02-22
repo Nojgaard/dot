@@ -7,6 +7,7 @@ import mujoco
 import mujoco.viewer as mjv
 from dm_control.composer.arena import Arena
 
+from dot.control.inverse_kinematics import RobotIK
 from dot.real.comm import SensorReadings
 from dot.real.robot_controller import RobotController
 from dot.sim.quadruped import Quadruped
@@ -19,11 +20,38 @@ class CalibrateBiasGui:
         self._joints = joints
         self._controller = controller
         self.joint_ranges = np.array([j.range for j in self._joints])
-        print(self.joint_ranges)
+        
+        specs = Quadruped()
+        print(specs.body_width, specs.body_length)
+        # shoulder = 11.5
+        # wrist = 13.5
+        # width = 0.072
+        # length = 0.186
+        self.robot_ik = RobotIK(
+            specs.body_length,
+            specs.body_width,
+            specs.max_height * 0.7,
+            specs.hip_offset,
+            specs.shoulder_length,
+            specs.wrist_length,
+            translation=np.array([-0.035, 0, 0]),
+        )
 
     @property
     def joint_angles(self):
         return self._physics.bind(self._joints).qpos.copy()
+    
+    def set_mode(self):
+        mode_val = dpg.get_value(self.mode_dropdown)
+        joints = self._physics.bind(self._joints)
+        if mode_val == "Straight":
+            joints.qpos[:] = 0
+            self._physics.data.ctrl[:] = 0
+        elif mode_val == "Bend":
+            angles = self.robot_ik.find_angles().flatten()
+            joints.qpos[:] = angles
+            self._physics.data.ctrl[:] = angles
+            
 
     def launch(self):
         dpg.create_context()
@@ -50,6 +78,9 @@ class CalibrateBiasGui:
                     )
                 )
 
+            dpg.add_text("Mode")
+            self.mode_dropdown = dpg.add_combo(["Straight", "Bend"], default_value="Straight")
+            dpg.add_button(label="Set Angles", callback=self.set_mode)
             dpg.add_text("Connect")
             self.connect_checkbox = dpg.add_checkbox(default_value=False)
 
@@ -116,6 +147,8 @@ async def main():
     joints = spot.mjcf_model.find_all("joint")
 
     controller = await RobotController.create()
+    controller.servo_driver.load_calibration("data/calibration.json")
+    print(controller.servo_driver.calibration.bounds_pwm_ms)
     gui = CalibrateBiasGui(controller, physics, joints)
     gui_task = asyncio.create_task(asyncio.to_thread(gui.launch))
     await asyncio.sleep(0.2)

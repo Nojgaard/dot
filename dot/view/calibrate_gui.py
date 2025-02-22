@@ -21,12 +21,12 @@ class CalibrateGui:
 
             dpg.add_text("Min MS PWM")
             self.servo_min_us_slider = dpg.add_slider_int(
-                default_value=500, min_value=400, max_value=700
+                default_value=500, min_value=300, max_value=700
             )
 
             dpg.add_text("Max MS PWM")
             self.servo_max_us_slider = dpg.add_slider_int(
-                default_value=2650, min_value=2400, max_value=2700
+                default_value=2650, min_value=2400, max_value=2800
             )
 
             dpg.add_text("Orientation")
@@ -88,5 +88,5 @@ class CalibrateGui:
 
         print(f"Updating Servos: angle={angle}, ({min_us}, {max_us})")
         driver = self._controller.servo_driver
-        driver.calibration.bounds_pwm_ms = (min_us, max_us)
+        driver.calibration.bounds_pwm_ms = [(min_us, max_us) for _ in range(driver.calibration.num_servos)]
         self._controller.servo_driver.set_servo_angles([angle] * 12)

@@ -24,13 +24,13 @@ class RealControlGui:
             dpg.add_text("Body Translation")
             self._trans_sliders = [
                 dpg.add_slider_float(
-                    label="x", default_value=-0.035, min_value=-0.1, max_value=0.1
+                    label="x", default_value=-0.015, min_value=-0.1, max_value=0.1
                 ),
                 dpg.add_slider_float(
                     label="y", default_value=0, min_value=-0.1, max_value=0.1
                 ),
                 dpg.add_slider_float(
-                    label="z", default_value=0, min_value=-0.1, max_value=0.1
+                    label="z", default_value=0.02, min_value=-0.1, max_value=0.1
                 ),
             ]
 
@@ -40,7 +40,7 @@ class RealControlGui:
                     label="roll", default_value=0, min_value=-1, max_value=1
                 ),
                 dpg.add_slider_float(
-                    label="pitch", default_value=0, min_value=-1, max_value=1
+                    label="pitch", default_value=-0.08, min_value=-1, max_value=1
                 ),
                 dpg.add_slider_float(
                     label="yaw", default_value=0, min_value=-1, max_value=1
@@ -72,7 +72,7 @@ class RealControlGui:
                 ),
                 dpg.add_slider_float(
                     label="Penetration Depth",
-                    default_value=0.005,
+                    default_value=0.0025,
                     min_value=0,
                     max_value=0.05,
                 ),
@@ -85,6 +85,7 @@ class RealControlGui:
             )
 
             self._voltage_text = dpg.add_text("Voltage: None")
+            self._current_text = dpg.add_text("Current: None")
 
         dpg.setup_dearpygui()
         dpg.show_viewport()
@@ -95,6 +96,9 @@ class RealControlGui:
     def update_controller(self, sensor_readings: SensorReadings):
         dpg.set_value(
             self._voltage_text, f"Voltage: {sensor_readings.battery_voltage:.2f}"
+        )
+        dpg.set_value(
+            self._current_text, f"Current: {sensor_readings.battery_current:.2f}"
         )
 
         controller = self._controller
@@ -122,13 +126,15 @@ class RealControlGui:
 
 async def main():
     controller = await RobotController.create()
+    controller.servo_driver.load_calibration("data/calibration.json")
+    controller.robot_gait.swing_time = 0.25
     gui = RealControlGui(controller)
     gui_task = asyncio.create_task(asyncio.to_thread(gui.launch))
 
     await asyncio.sleep(0.5)
     controller_task = asyncio.create_task(
         controller.launch(
-            RobotController.Mode.Normal, callback=gui.update_controller, fps=20
+            RobotController.Mode.Normal, callback=gui.update_controller, fps=40
         )
     )
 

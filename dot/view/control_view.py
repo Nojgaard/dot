@@ -20,10 +20,10 @@ def main():
     task: ModulateGaitTask = env.task
     model_ik = env.task.model_ik
     model_gait = env.task.model_gait
+    task.model_gait.swing_time = 0.25
     env.reset()
 
     action_spec = env.action_spec()
-    print(action_spec)
     gui = ControlGui(model_ik, model_gait)
     def update_gui(time_step):
         task.enable_input_controller = gui.enable_controller
