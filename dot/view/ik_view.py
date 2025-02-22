@@ -17,7 +17,7 @@ def main():
         spot.body_width,
         spot.max_height * 0.7,
         spot.hip_offset,
-        spot.shoulder_length,
+        spot.arm_length,
         spot.wrist_length
     )
 

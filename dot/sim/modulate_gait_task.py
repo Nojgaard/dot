@@ -135,7 +135,7 @@ class ModulateGaitTask(Task):
         )
         joint_names = [j.name for j in self.model.mjcf_model.find_all("joint")]
         for name, angle in zip(joint_names, self._rest_joint_angles):
-            physics.named.data.qpos[f"spot/{name}"] = angle
+            physics.named.data.qpos[f"dot/{name}"] = angle
 
         if self.enable_input_controller:
             self.input_controller.initialize_episode()

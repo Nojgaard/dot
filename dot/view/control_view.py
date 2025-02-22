@@ -20,7 +20,6 @@ def main():
     task: ModulateGaitTask = env.task
     model_ik = env.task.model_ik
     model_gait = env.task.model_gait
-    task.model_gait.swing_time = 0.25
     env.reset()
 
     action_spec = env.action_spec()

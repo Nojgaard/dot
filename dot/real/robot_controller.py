@@ -28,7 +28,7 @@ class RobotController:
             self.robot_specs.hip_offset,
             #0.115,
             #0.135,
-            self.robot_specs.shoulder_length,
+            self.robot_specs.arm_length,
             self.robot_specs.wrist_length,
             translation=np.array([-0.015, 0, 0.02]),
         )

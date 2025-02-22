@@ -32,7 +32,7 @@ class CalibrateBiasGui:
             specs.body_width,
             specs.max_height * 0.7,
             specs.hip_offset,
-            specs.shoulder_length,
+            specs.arm_length,
             specs.wrist_length,
             translation=np.array([-0.035, 0, 0]),
         )

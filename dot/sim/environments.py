@@ -146,7 +146,7 @@ def modulate_gait_env(
         model.body_width,
         model.max_height * 0.7,
         model.hip_offset,
-        model.shoulder_length,
+        model.arm_length,
         model.wrist_length,
         translation=np.array([-0.035, 0, 0]),
     )

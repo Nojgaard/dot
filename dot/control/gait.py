@@ -80,7 +80,7 @@ class Gait:
 
     def stance_time(self) -> float:
         velocity = max(abs(self.target_speed), abs(self.yaw_rate))
-        return self.swing_time * (1 - velocity / 2.0)
+        return self.swing_time * (1 - velocity / 1.5)
 
     def stride_time(self) -> float:
         return self.swing_time + self.stance_time()

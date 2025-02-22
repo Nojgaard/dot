@@ -85,6 +85,7 @@ class ControlGui:
                 ControlInput("yaw rate", gait.yaw_rate, (-1, 1)),
                 ControlInput("clearance height", gait.clearance_height, (0, 0.1)),
                 ControlInput("penetration depth", gait.penetration_depth, (0, 0.05)),
+                ControlInput("swing time", gait.swing_time, (0, 1)),
             ],
         }
 
@@ -132,6 +133,10 @@ class ControlGui:
     @property
     def clearance_height(self):
         return self._find_input("clearance height").value.value
+    
+    @property
+    def swing_time(self):
+        return self._find_input("swing time").value.value
 
     @property
     def velocity(self):
@@ -159,3 +164,4 @@ class ControlGui:
         model_gait.target_speed = self.velocity
         model_gait.clearance_height = self.clearance_height
         model_gait.penetration_depth = self.penetration_depth
+        model_gait.swing_time = self.swing_time

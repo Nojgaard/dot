@@ -1,6 +1,5 @@
 <mujoco model="dot">
     <compiler angle="radian" convexhull="true" autolimits="true" />
-    <option gravity="0 0 0" />
 
     <asset>
         <mesh name="mainbody" file="stl/MainBody.stl" scale="0.001 0.001 0.001" />
@@ -38,7 +37,7 @@
 
     <worldbody>
         <body name="base">
-            <joint type="free" />
+            <site name="imu" pos="0 0 0" />
             <geom rgba="0.1 0.1 0.1 1" mesh="mainbody" mass="1.2" />
             <geom rgba="0.92 0.83 0 1" mesh="shell" mass="0.1" />
 
@@ -54,10 +53,11 @@
                     <geom rgba="0.1 0.1 0.1 1" mesh="fla" mass="0.13" />
 
                     <body name="front_left_wrist_link">
-                        <joint name="motor_front_left_foot" pos="0.13355 0.09865 -0.1006"
+                        <joint name="motor_front_left_wrist" pos="0.13355 0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="flw" mass="0.1" />
-                        <geom rgba="0.6 0.6 0.6 1" mesh="flf" mass="0.01" friction="10.0 0.3 0.3" />
+                        <geom rgba="0.6 0.6 0.6 1" mesh="flf" mass="0.01" friction="10.0 0.3 0.3"
+                            name="front_left_foot_geom" />
                     </body>
                 </body>
             </body>
@@ -74,7 +74,7 @@
                     <geom rgba="0.1 0.1 0.1 1" mesh="fra" mass="0.13" />
 
                     <body name="front_right_wrist_link">
-                        <joint name="motor_front_right_foot" pos="0.13355 -0.09865 -0.1006"
+                        <joint name="motor_front_right_wrist" pos="0.13355 -0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="frw" mass="0.1" />
                         <geom rgba="0.6 0.6 0.6 1" mesh="frf" mass="0.01" friction="10.0 0.3 0.3" />
@@ -94,7 +94,7 @@
                     <geom rgba="0.1 0.1 0.1 1" mesh="rla" mass="0.13" />
 
                     <body name="rear_left_wrist_link">
-                        <joint name="motor_rear_left_foot" pos="-0.07655 0.09865 -0.1006"
+                        <joint name="motor_rear_left_wrist" pos="-0.07655 0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="rlw" mass="0.1" />
                         <geom rgba="0.6 0.6 0.6 1" mesh="rlf" mass="0.01" friction="10.0 0.3 0.3" />
@@ -114,7 +114,7 @@
                     <geom rgba="0.1 0.1 0.1 1" mesh="rra" mass="0.13" />
 
                     <body name="rear_right_wrist_link">
-                        <joint name="motor_rear_right_foot" pos="-0.07655 -0.09865 -0.1006"
+                        <joint name="motor_rear_right_wrist" pos="-0.07655 -0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="rrw" mass="0.1" />
                         <geom rgba="0.6 0.6 0.6 1" mesh="rrf" mass="0.01" friction="10.0 0.3 0.3" />
@@ -124,25 +124,10 @@
         </body>
     </worldbody>
 
-    <actuator>
-        <position name="motor_front_left_shoulder" joint="motor_front_left_shoulder"
-            ctrlrange="-1 1" />
-        <position name="motor_front_left_arm" joint="motor_front_left_arm" ctrlrange="-0.97 2.17" />
-        <position name="motor_front_left_foot" joint="motor_front_left_foot" ctrlrange="-2.59 0.1" />
-
-        <position name="motor_front_right_shoulder" joint="motor_front_right_shoulder"
-            ctrlrange="-1 1" />
-        <position name="motor_front_right_arm" joint="motor_front_right_arm" ctrlrange="-0.97 2.17" />
-        <position name="motor_front_right_foot" joint="motor_front_right_foot" ctrlrange="-2.59 0.1" />
-
-        <position name="motor_rear_left_shoulder" joint="motor_rear_left_shoulder"
-            ctrlrange="-1 1" />
-        <position name="motor_rear_left_arm" joint="motor_rear_left_arm" ctrlrange="-0.97 2.17" />
-        <position name="motor_rear_left_foot" joint="motor_rear_left_foot" ctrlrange="-2.59 0.1" />
-
-        <position name="motor_rear_right_shoulder" joint="motor_rear_right_shoulder"
-            ctrlrange="-1 1" />
-        <position name="motor_rear_right_arm" joint="motor_rear_right_arm" ctrlrange="-0.97 2.17" />
-        <position name="motor_rear_right_foot" joint="motor_rear_right_foot" ctrlrange="-2.59 0.1" />
-    </actuator>
+    <sensor>
+        <framequat name="imu_quat" objtype="site" objname="imu" />
+        <gyro name="imu_gyro" site="imu" />
+        <accelerometer name="imu_acc" site="imu" />
+        <velocimeter name="imu_vel" site="imu" />
+    </sensor>
 </mujoco>

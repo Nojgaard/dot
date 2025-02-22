@@ -59,34 +59,37 @@ class Robot(Entity):
 
     @property
     def body_width(self) -> float:
-        left_hip = self.mjcf_model.find("body", "front_left_shoulder_link")
-        right_hip = self.mjcf_model.find("body", "front_right_shoulder_link")
+        left_hip = self.mjcf_model.find("joint", "motor_front_left_shoulder")
+        right_hip = self.mjcf_model.find("joint", "motor_front_right_shoulder")
         return np.linalg.norm(left_hip.pos - right_hip.pos)
 
     @property
     def body_length(self) -> float:
-        front_hip = self.mjcf_model.find("body", "front_left_shoulder_link")
-        rear_hip = self.mjcf_model.find("body", "rear_left_shoulder_link")
+        front_hip = self.mjcf_model.find("joint", "motor_front_left_shoulder")
+        rear_hip = self.mjcf_model.find("joint", "motor_rear_left_shoulder")
         return np.linalg.norm(front_hip.pos - rear_hip.pos)
 
     @property
     def max_height(self) -> float:
-        return self.shoulder_length + self.wrist_length
+        return self.arm_length + self.wrist_length
 
     @property
-    def shoulder_length(self) -> float:
-        body_elbow = self._model.find("body", "front_left_foot_link")
-        return np.linalg.norm(body_elbow.pos)
+    def arm_length(self) -> float:
+        arm_joint = self._model.find("joint", "motor_front_left_arm")
+        wrist_joint = self._model.find("joint", "motor_front_left_wrist")
+        return np.linalg.norm(arm_joint.pos - wrist_joint.pos)
 
     @property
     def wrist_length(self) -> float:
-        geom_foot = self._model.find("geom", "front_left_foot_mesh")
-        return np.linalg.norm(geom_foot.pos)
+        return 0.12
 
     @property
     def hip_offset(self) -> tuple[float, float]:
-        body_shoulder = self._model.find("body", "front_left_leg_link")
-        return np.abs(np.array(body_shoulder.pos[1:][::-1]))
+        shoulder_pos = self._model.find("joint", "motor_front_left_shoulder").pos
+        arm_pos = self._model.find("joint", "motor_front_left_arm").pos
+        shoulder_offsets = np.abs(shoulder_pos - arm_pos)
+
+        return np.array([shoulder_offsets[2], shoulder_offsets[1]])
 
     @property
     def actuators(self):

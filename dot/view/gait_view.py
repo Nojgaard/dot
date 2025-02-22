@@ -37,7 +37,7 @@ def main():
         model.body_width,
         model.max_height * 0.7,
         model.hip_offset,
-        model.shoulder_length,
+        model.arm_length,
         model.wrist_length,
     )
     

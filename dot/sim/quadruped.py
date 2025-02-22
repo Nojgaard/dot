@@ -14,4 +14,4 @@ from dot.sim.rotation import quat_to_euler
 
 class Quadruped(Robot):
     def __init__(self):
-        super().__init__(r"assets\model\spot.xml")
+        super().__init__(r"assets\dot\dot.xml")

@@ -5,6 +5,9 @@ import mujoco.viewer as mjv
 
 
 spot = Quadruped()
+print("BODY:", spot.body_width, spot.body_length)
+print("OFFSETS:", spot.hip_offset)
+print("LEG:", spot.arm_length, spot.wrist_length)
 arena = Arena()
 arena.add_free_entity(spot)
 arena.mjcf_model.option.timestep = "0.005"
