@@ -1,34 +1,88 @@
 {
-    "servo": [
+    "servos": [
+        {
+            "name": "FLS",
+            "id": 0,
+            "pwm_range": [545, 2610],
+            "degree_bias": -4,
+            "invert": true
+        },
         {
             "name": "FLA",
             "id": 1,
             "pwm_range": [400, 2473],
-            "degree_bias": 0
+            "degree_bias": 2.6,
+            "invert": false
         },
         {
             "name": "FLW",
             "id": 2,
             "pwm_range": [459, 2570],
-            "degree_bias": 0 
+            "degree_bias": 1,
+            "invert": false
+        },
+        {
+            "name": "FRS",
+            "id": 3,
+            "pwm_range": [534, 2619],
+            "degree_bias": -2.4,
+            "invert": true
+        },
+        {
+            "name": "FRA",
+            "id": 4,
+            "pwm_range": [571, 2674],
+            "degree_bias": 0,
+            "invert": true
         },
         {
             "name": "FRW",
-            "id": 4,
-            "pwm_range": [500, 2571],
-            "degree_bias": 0 
+            "id": 5,
+            "pwm_range": [500, 2571], 
+            "degree_bias": 4,
+            "invert": true
+        },
+        {
+            "name": "RLS",
+            "id": 6,
+            "pwm_range": [452, 2572],
+            "degree_bias": -4.6,
+            "invert": false
         },
         {
             "name": "RLA",
             "id": 7,
             "pwm_range": [560, 2660],
-            "degree_bias": 0
+            "degree_bias": 0,
+            "invert": false
         },
         {
             "name": "RLW",
             "id": 8,
             "pwm_range": [430, 2545],
-            "degree_bias": 0
+            "degree_bias": 1.6,
+            "invert": false
+        },
+        {
+            "name": "RRS",
+            "id": 9,
+            "pwm_range": [454, 2558],
+            "degree_bias": 10,
+            "invert": false
+        },
+        {
+            "name": "RRA",
+            "id": 10,
+            "pwm_range": [525, 2627],
+            "degree_bias": -10,
+            "invert": true
+        },
+        {
+            "name": "RRW",
+            "id": 11,
+            "pwm_range": [500, 2540],
+            "degree_bias": -4,
+            "invert": true
         }
     ]
 }
