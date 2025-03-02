@@ -34,7 +34,7 @@ class CalibrateBiasGui:
             specs.hip_offset,
             specs.arm_length,
             specs.wrist_length,
-            translation=np.array([-0.035, 0, 0]),
+            translation=np.array([-0.04, 0, 0]),
         )
 
     @property

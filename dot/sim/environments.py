@@ -148,7 +148,7 @@ def modulate_gait_env(
         model.hip_offset,
         model.arm_length,
         model.wrist_length,
-        translation=np.array([-0.035, 0, 0]),
+        translation=np.array([-0.04, 0, 0]),
     )
     model_gait = Gait(model_ik.foot_points)
     input_controller = GaitInputController(model_gait, time_per_mode=time_per_mode)
