@@ -1,29 +1,22 @@
 #include <Arduino.h>
 #include <Comm.h>
 #include <SPI.h>
-#include <ServoControllerPca9685.h>
-#include <ServoControllerDirect.h>
-#include <BatterySensor.h>
-#include <IMU.h>
+#include <RobotIO.h>
 
 Comm comm;
-ServoControllerPca9685 crtlServo;
-BatterySensor batSensor;
+RobotIO robotIO;
 TelemetryPacket telemetry;
-IMU imu;
 
 void setup() {
   Serial.begin(9600);
   comm.begin();
-  crtlServo.begin();
-  batSensor.begin();
-  imu.begin();
+  robotIO.begin();
 }
 
 void updateSensorState() {
-  telemetry.batteryVoltage = batSensor.readVoltage();
-  telemetry.batteryCurrent = batSensor.readCurrent();
-  imu.read(telemetry.orientation, telemetry.acceleration);
+  telemetry.batteryVoltage = robotIO.battery.readVoltage();
+  telemetry.batteryCurrent = robotIO.battery.readCurrent();
+  robotIO.imu.read(telemetry.orientation, telemetry.acceleration);
   //Serial.println(telemetry.batteryVoltage);
   //Serial.println(telemetry.batteryCurrent);
 }
@@ -31,7 +24,7 @@ void updateSensorState() {
 void loop() {
   if (comm.isTimedOut()) {
     Serial.println("Comms timed out! Detaching servos...");
-    crtlServo.detach();
+    robotIO.servo.detach();
     updateSensorState();
     delay(500);
     return;
@@ -43,6 +36,6 @@ void loop() {
   if (comm.isServoPacketAvailable()) {
     Serial.println("Received servo packet!");
     const ServoPacket& servoPacket = comm.consumeServoPacket();
-    crtlServo.writeMicroSeconds(servoPacket.microseconds);
+    robotIO.servo.writeMicroSeconds(servoPacket.microseconds);
   }
 }
