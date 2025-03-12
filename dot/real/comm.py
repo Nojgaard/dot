@@ -5,18 +5,13 @@ import struct
 import numpy as np
 import copy
 
-class SensorReadings:
-    def __init__(self, packet: list[float]):
-        self.battery_voltage = packet[0]
-        self.battery_current = packet[1]
-        self.orientation = np.array(packet[2:5])
-        self.acceleration = np.array(packet[5:8])
+from dot.real import packet
 
 class Comm:
     def __init__(self, socket: asyncudp.Socket):
         self._socket = socket
         self._is_connected = False
-        self._sensor_readings = SensorReadings([-1] * 8)
+        self._telemetry = packet.Telemetry.default()
         self._sensor_lock = asyncio.Lock()
 
     async def connect(self):
@@ -25,8 +20,7 @@ class Comm:
         print("Connecting to robot", end="")
         while not self._is_connected:
             print(".", end="", flush=True)
-            ip_packet = np.array([int(x) for x in self._local_ip().split(".")], dtype=np.uint8)
-            self._socket.sendto(struct.pack("BBBB", *ip_packet))
+            self._socket.sendto(packet.build_ping())
             try:
                 data, addr = await asyncio.wait_for(self._socket.recvfrom(), timeout=1)
             except asyncio.TimeoutError:
@@ -34,7 +28,7 @@ class Comm:
 
             print()
             print(f"Success! Linked {self._local_ip()} to {addr[0]}")
-            print(f"Status: {ord(data)}")
+            #print(f"Status: {ord(data)}")
             self._is_connected = True
 
     def send_packet(self, data: bytes):
@@ -43,21 +37,19 @@ class Comm:
     async def listen_to_sensor_readings(self):
         while True:
             data, addr = await self._socket.recvfrom()
-            unpacked_data = struct.unpack("8f", data)
-            async with self._sensor_lock:
-                self._sensor_readings = SensorReadings(unpacked_data)
+            telemetry = packet.Telemetry.from_packet(data)
+            if telemetry is None:
+                print("Telemetry packet is of unexpected format")
+                continue
+            
+            self._telemetry = telemetry
 
-    async def read_sensors(self):
-        async with self._sensor_lock:
-            readings = copy.copy(self._sensor_readings)
-            return readings
-
+    @property
+    def telemetry(self):
+        return self._telemetry
 
     def _local_ip(self) -> str:
         return self._socket.getsockname()[0]
-        local_ip = tuple(int(x) for x in local_ip_str.split("."))
-        assert len(local_ip) == 4
-        return local_ip
 
     @classmethod
     async def create(cls):

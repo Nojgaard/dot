@@ -4,6 +4,7 @@ from typing import Callable, Self
 import numpy as np
 import time
 
+from dot.real import packet
 from dot.real.comm import Comm
 from dot.control.inverse_kinematics import RobotIK
 from dot.control.gait import Gait
@@ -26,13 +27,30 @@ class RobotController:
             self.robot_specs.body_width,
             self.robot_specs.max_height * 0.7,
             self.robot_specs.hip_offset,
-            #0.115,
-            #0.135,
+            # 0.115,
+            # 0.135,
             self.robot_specs.arm_length,
             self.robot_specs.wrist_length,
             translation=np.array([-0.015, 0, 0.02]),
         )
         self.robot_gait = Gait(self.robot_ik.foot_points)
+
+    async def sync_with_firmware(self):
+        needed_to_sync = False
+        servo_status = self._comm.telemetry.servo_status
+
+        if servo_status != packet.ServoStatus.MISSING_CALIBRATION:
+            return needed_to_sync
+
+        print("Syncing servo driver with firmware", end="", flush=True)
+        while servo_status == packet.ServoStatus.MISSING_CALIBRATION:
+            self.servo_driver.send_calibration()
+            needed_to_sync = True
+            print(".", end="", flush=True)
+            await asyncio.sleep(1)
+            servo_status = self._comm.telemetry.servo_status
+        print()
+        return needed_to_sync
 
     async def launch_control_loop(
         self, mode: Mode, callback: Callable[[Self], None], fps: int = 20
@@ -40,10 +58,14 @@ class RobotController:
         frame_interval = 1.0 / fps
         prev_time = time.time()
         while True:
+            if await self.sync_with_firmware():
+                prev_time = time.time()
+
             current_time = time.time()
             dt = current_time - prev_time
-            sensor_readings = await self._comm.read_sensors()
-            send_to_robot = callback(sensor_readings)
+
+            telemetry = self._comm.telemetry
+            send_to_robot = callback(telemetry)
 
             if send_to_robot and mode == RobotController.Mode.Normal:
                 foot_positions = self.robot_gait.compute_foot_positions(dt)

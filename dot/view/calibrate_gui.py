@@ -3,7 +3,7 @@ import asyncio
 import dearpygui.dearpygui as dpg
 import numpy as np
 
-from dot.real.comm import SensorReadings
+from dot.real.packet import Telemetry
 from dot.real.robot_controller import RobotController
 
 
@@ -70,7 +70,7 @@ class CalibrateGui:
 
         dpg.set_value(self.servo_angle_slider, int(np.round(servo_angle)))
 
-    def update_servos(self, sensor_readings: SensorReadings):
+    def update_servos(self, sensor_readings: Telemetry):
         dpg.set_value(
             self._voltage_text, f"Voltage: {sensor_readings.battery_voltage:.2f}"
         )

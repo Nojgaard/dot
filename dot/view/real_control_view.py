@@ -1,5 +1,5 @@
 from dot.control.gamepad import Gamepad
-from dot.real.comm import SensorReadings
+from dot.real.comm import Telemetry
 from dot.real.robot_controller import RobotController
 import dearpygui.dearpygui as dpg
 import numpy as np
@@ -93,7 +93,7 @@ class RealControlGui:
         dpg.start_dearpygui()
         dpg.destroy_context()
 
-    def update_controller(self, sensor_readings: SensorReadings):
+    def update_controller(self, sensor_readings: Telemetry):
         dpg.set_value(
             self._voltage_text, f"Voltage: {sensor_readings.battery_voltage:.2f}"
         )

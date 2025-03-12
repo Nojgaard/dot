@@ -1,13 +1,14 @@
 #pragma once
 #include <BatterySensor.h>
 #include <IMU.h>
-#include <ServoControllerPca9685.h>
+#include <ServoController.h>
 
 class RobotIO {
  public:
   void begin();
+  void printStatus() const;
 
-  ServoControllerPca9685 servo;
+  ServoController servo;
   IMU imu;
   BatterySensor battery;
  private:

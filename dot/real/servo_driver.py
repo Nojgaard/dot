@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import math
 import struct
+from dot.real import packet
 from dot.real.comm import Comm
 import numpy as np
 from numpy.typing import NDArray
@@ -11,6 +12,7 @@ class ServoDriver:
     @dataclass
     class Calibration:
         num_servos = 12
+        degreesPerSecond = 400
         bounds_pwm_ms = [(500, 2500) for _ in range(12)]
         bounds_servo_angle = (0, 180)
         invert_servo_angle = [False] * 12
@@ -20,7 +22,13 @@ class ServoDriver:
         self._comm = comm
         self.calibration = ServoDriver.Calibration()
 
-    def set_servo_angles(self, servo_angles: NDArray[np.floating]):
+    def set_servo_angles(
+        self, servo_angles: NDArray[np.floating], send_pwm_directly: bool = False
+    ):
+        if not send_pwm_directly:
+            self._send_target_servo_angles(servo_angles)
+            return
+
         servo_pwm_ms = [
             np.interp(
                 angle,
@@ -64,9 +72,29 @@ class ServoDriver:
         assert len(servo_pwm_ms) == 12
 
         bounds_pwn = self.calibration.bounds_pwm_ms
-        packet = np.asarray(np.round(servo_pwm_ms, decimals=0), dtype=np.int32)
-        packet = np.clip(packet, [x[0] for x in bounds_pwn], [x[1] for x in bounds_pwn])
-        data = struct.pack("12i", *packet)
+        microseconds = np.asarray(np.round(servo_pwm_ms, decimals=0), dtype=np.int32)
+        microseconds = np.clip(
+            microseconds, [x[0] for x in bounds_pwn], [x[1] for x in bounds_pwn]
+        )
+        data = packet.build_servo_ms_packet(microseconds)
+        self._comm.send_packet(data)
+
+    def _send_target_servo_angles(self, target_angles: NDArray[np.floating]):
+        target_angles = np.clip(target_angles, *self.calibration.bounds_servo_angle)
+        data = packet.servo_target_angle_packet(target_angles)
+        self._comm.send_packet(data)
+
+    def send_calibration(self):
+        min_microseconds, max_microseconds = zip(*self.calibration.bounds_pwm_ms)
+        max_servo_angles = self.calibration.num_servos * [
+            self.calibration.bounds_servo_angle[1]
+        ]
+        data = packet.servo_calibration_packet(
+            self.calibration.degreesPerSecond,
+            min_microseconds,
+            max_microseconds,
+            max_servo_angles,
+        )
         self._comm.send_packet(data)
 
     def load_calibration(self, path: str):

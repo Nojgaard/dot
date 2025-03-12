@@ -14,13 +14,18 @@ class IMU {
     bool begin();
     uint8_t read(VectorFloat& yawPitchRoll, VectorFloat& acceleration);
     void calibrate();
+    uint8_t deviceStatus() const;
+    //const VectorFloat& orientation();
+    //const VectorFloat& acceleration();
 
     private:
     void storeCalibration();
     void readCalibration();
-    long lastRead;
 
     MPU6050 _mpu;
+    uint8_t _deviceStatus;
+    //VectorFloat _orientation;
+    //VectorFloat _acceleration;
 
     // Acceleration 2G scale
     float ACC_SCALE = 16384 / 2.0;

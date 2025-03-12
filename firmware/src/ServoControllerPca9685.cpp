@@ -10,7 +10,13 @@
 #define SERVO_FREQ 50  // Analog servos run at ~50 Hz updates
 
 void ServoControllerPca9685::begin() {
-  pwm.begin();
+  _deviceStatus = 0;
+  bool success = pwm.begin();
+
+  if (!success) {
+    _deviceStatus = 1;
+    return;
+  }
 
   /*
    * In theory the internal oscillator (clock) is 25MHz but it really isn't
@@ -36,6 +42,8 @@ void ServoControllerPca9685::begin() {
 }
 
 void ServoControllerPca9685::writeMicroSeconds(int servoNum, int us) {
+  if (_deviceStatus != 0) return;
+
   if (us == 0) {  // disable servo
     pwm.setPin(servoNum, 0);
   } else {
@@ -55,3 +63,5 @@ void ServoControllerPca9685::detach() {
     writeMicroSeconds(i, 0);
   }
 }
+
+uint8_t ServoControllerPca9685::deviceStatus() const { return _deviceStatus; }

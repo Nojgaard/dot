@@ -8,7 +8,7 @@ import mujoco.viewer as mjv
 from dm_control.composer.arena import Arena
 
 from dot.control.inverse_kinematics import RobotIK
-from dot.real.comm import SensorReadings
+from dot.real.comm import Telemetry
 from dot.real.robot_controller import RobotController
 from dot.sim.quadruped import Quadruped
 import numpy as np
@@ -35,7 +35,7 @@ class CalibrateBiasGui:
             specs.arm_length,
             specs.wrist_length,
             translation=np.array([-0.04, 0, 0]),
-        )
+        )  
 
     @property
     def joint_angles(self):
@@ -92,7 +92,7 @@ class CalibrateBiasGui:
         dpg.start_dearpygui()
         dpg.destroy_context()
 
-    def update_controller(self, sensor_readings: SensorReadings):
+    def update_controller(self, sensor_readings: Telemetry):
         dpg.set_value(
             self._voltage_text, f"Voltage: {sensor_readings.battery_voltage:.2f}"
         )

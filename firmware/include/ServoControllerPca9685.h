@@ -10,7 +10,9 @@ class ServoControllerPca9685 {
   void writeMicroSeconds(int servoNum, int us);
   void writeMicroSeconds(const int us[Specs::NUM_SERVOS]);
   void detach();
+  uint8_t deviceStatus() const;
 
  private:
   Adafruit_PWMServoDriver pwm;
+  uint8_t _deviceStatus;
 };

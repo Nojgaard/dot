@@ -2,6 +2,7 @@
 #include <AsyncUDP.h>
 #include <WiFi.h>
 #include <comm.h>
+#
 
 const char *ssid = "Telenor7748bod";
 const char *password = "77xugJACB";
@@ -14,13 +15,13 @@ IPAddress subnet(255, 255, 0, 0);
 const int COMM_PORT = 9999;
 const unsigned long SENSOR_DELAY_MS = 33;
 
-bool Comm::begin() {
+bool Comm::begin(RobotIO& robotIO) {
   lastSentSensorPacketMs = 0;
   if (!connectToWifi()) {
     return false;
   }
 
-  if (!connectToController()) {
+  if (!connectToController(robotIO)) {
     return false;
   }
 
@@ -48,7 +49,7 @@ bool Comm::connectToWifi() {
   return true;
 }
 
-bool Comm::connectToController() {
+bool Comm::connectToController(RobotIO& robotIO) {
   Serial.println("Connecting to controller");
 
   if (!udp.listen(COMM_PORT)) {
@@ -56,7 +57,7 @@ bool Comm::connectToController() {
     return false;
   }
 
-  setupPacketReceiver();
+  setupPacketReceiver(robotIO);
 
   while (!isConnected()) {
     Serial.print(".");
@@ -68,38 +69,20 @@ bool Comm::connectToController() {
 
 bool Comm::isConnected() { return remoteIP != INADDR_NONE; }
 
-bool Comm::isServoPacketAvailable() { return hasServoPacket; }
-
 bool Comm::isTimedOut() {
   return (millis() - lastReceivedPacketMs) > timeoutMs;
 }
 
-const ServoPacket &Comm::consumeServoPacket() {
-  hasServoPacket = false;
-  return lastServoPacket;
-}
-
-void Comm::setupPacketReceiver() {
-  udp.onPacket([this](AsyncUDPPacket &packet) {
-    lastReceivedPacketMs = millis();
+void Comm::setupPacketReceiver(RobotIO& robotIO) {
+  udp.onPacket([&](AsyncUDPPacket &packet) {
+    this->lastReceivedPacketMs = millis();
     if (!isConnected()) {
       remoteIP = packet.remoteIP();
       Serial.print("Found controller with IP:");
       Serial.println(remoteIP);
     }
 
-    if (packet.length() != sizeof(ServoPacket)) {
-      Serial.println("Received ping packet");
-      Serial.println(packet.remoteIP());
-      Serial.println(packet.remotePort());
-      Serial.println(packet.localIP());
-      Serial.println(packet.localPort());
-      packet.write(0);
-      return;
-    }
-
-    hasServoPacket = true;
-    memcpy(&lastServoPacket, packet.data(), sizeof(ServoPacket));
+    readPacket(packet, robotIO);
   });
 }
 

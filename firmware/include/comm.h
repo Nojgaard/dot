@@ -2,36 +2,24 @@
 
 #include <AsyncUDP.h>
 #include <helper_3dmath.h>
-
-struct ServoPacket {
-  int microseconds[12];
-};
-
-struct TelemetryPacket {
-  float batteryVoltage;
-  float batteryCurrent;
-  VectorFloat orientation;
-  VectorFloat acceleration;
-};
+#include <RobotIO.h>
+#include <Packets.h>
 
 class Comm {
  public:
-  bool begin();
-  const ServoPacket& consumeServoPacket();
+  bool begin(RobotIO& robotIO);
   void sendSensorState(const TelemetryPacket& packet);
-  bool isServoPacketAvailable();
   bool isConnected();
   bool isTimedOut();
 
  private:
   bool connectToWifi();
-  bool connectToController();
-  void setupPacketReceiver();
+  bool connectToController(RobotIO& robotIO);
+  void setupPacketReceiver(RobotIO& robotIO);
 
   AsyncUDP udp;
   bool hasServoPacket;
   unsigned long timeoutMs = 1000;
   unsigned long lastReceivedPacketMs;
   unsigned long lastSentSensorPacketMs;
-  ServoPacket lastServoPacket;
 };
