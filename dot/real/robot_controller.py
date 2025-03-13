@@ -55,6 +55,8 @@ class RobotController:
     async def launch_control_loop(
         self, mode: Mode, callback: Callable[[Self], None], fps: int = 20
     ):
+        self.servo_driver.send_calibration()
+        await asyncio.sleep(0.3)
         frame_interval = 1.0 / fps
         prev_time = time.time()
         while True:

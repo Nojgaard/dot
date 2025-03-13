@@ -11,7 +11,7 @@ async def main():
     await asyncio.sleep(0.5)
     controller_task = asyncio.create_task(
         controller.launch(
-            RobotController.Mode.Calibrate, callback=gui.update_servos, fps=20
+            RobotController.Mode.Calibrate, callback=gui.update_servos, fps=10
         )
     )
 

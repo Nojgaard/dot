@@ -8,7 +8,7 @@ import mujoco.viewer as mjv
 from dm_control.composer.arena import Arena
 
 from dot.control.inverse_kinematics import RobotIK
-from dot.real.comm import Telemetry
+from dot.real.packet import Telemetry
 from dot.real.robot_controller import RobotController
 from dot.sim.quadruped import Quadruped
 import numpy as np

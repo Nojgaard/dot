@@ -36,7 +36,7 @@ void readServoCalibrationPacket(ServoCalibrationPacket& packet,
                                 RobotIO& robotIO) {
   robotIO.servo.setCalibration(packet.degreesPerSecond, packet.minMicroseconds,
                                packet.maxMicroSeconds, packet.maxAngles);
-  //robotIO.servo.printCalibration();
+  robotIO.servo.printCalibration();
 }
 
 void readPingPacket(AsyncUDPPacket& packet) {

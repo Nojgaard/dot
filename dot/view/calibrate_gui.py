@@ -89,4 +89,4 @@ class CalibrateGui:
         print(f"Updating Servos: angle={angle}, ({min_us}, {max_us})")
         driver = self._controller.servo_driver
         driver.calibration.bounds_pwm_ms = [(min_us, max_us) for _ in range(driver.calibration.num_servos)]
-        self._controller.servo_driver.set_servo_angles([angle] * 12)
+        self._controller.servo_driver.set_servo_angles([angle] * 12, send_pwm_directly=True)

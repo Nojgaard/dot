@@ -47,6 +47,5 @@ void loop() {
   }
 
   robotIO.servo.actuate(dt);
-  
-  Serial.println(dtMillis);
+
 }
