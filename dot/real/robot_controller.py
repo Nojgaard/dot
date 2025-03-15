@@ -31,7 +31,7 @@ class RobotController:
             # 0.135,
             self.robot_specs.arm_length,
             self.robot_specs.wrist_length,
-            translation=np.array([-0.015, 0, 0.02]),
+            translation=np.array([-0.04, 0, 0]),
         )
         self.robot_gait = Gait(self.robot_ik.foot_points)
 

@@ -6,6 +6,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
 
+from dot.sim.quadruped import Quadruped
+
 
 @dataclass
 class LegIK:
@@ -25,7 +27,9 @@ class LegIK:
         alpha_0 = math.atan(y / z)
         alpha_1 = math.atan(off1 / off0) if off0 > 0 else math.radians(90)
         alpha_2 = math.atan(off0 / off1)
-        alpha_3 = math.asin(np.clip(h1 * math.sin(alpha_2 + math.radians(90)) / h2, -1, 1))
+        alpha_3 = math.asin(
+            np.clip(h1 * math.sin(alpha_2 + math.radians(90)) / h2, -1, 1)
+        )
         alpha_4 = math.radians(180) - (alpha_3 + alpha_2 + math.radians(90))
         alpha_5 = alpha_1 - alpha_4
         theta_h = alpha_0 - alpha_5
@@ -95,3 +99,20 @@ class RobotIK:
         ]
 
         return np.array(joint_angles)
+
+    @staticmethod
+    def from_quadruped(
+        quad: Quadruped,
+        rotation: Rotation = Rotation.identity(),
+        translation: NDArray[np.floating] = np.zeros(3),
+    ):
+        return RobotIK(
+            quad.body_length,
+            quad.body_width,
+            quad.max_height * 0.7,
+            quad.hip_offset,
+            quad.arm_length,
+            quad.wrist_length,
+            rotation,
+            translation,
+        )

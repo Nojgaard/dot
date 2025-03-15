@@ -50,7 +50,7 @@ class Gait:
     def __init__(
         self,
         foot_rest_poses: NDArray,
-        target_speed: float = 0.1,
+        target_speed: float = 0.0,
         lateral_rotation_angle: float = 0,
         yaw_rate: float = 0,
         swing_time: float = 0.2,

@@ -92,31 +92,30 @@ class Gamepad:
     def update_robot_inputs(self, robot_ik: RobotIK, robot_gait: Gait):
         left_axis = np.array([self.left_hat_x, self.left_hat_y])
         right_axis = np.array([self.right_hat_x, self.right_hat_y])
-        robot_ik.translation[0] = -0.04
-        robot_ik.translation[2] = 0.015
         for axis in [left_axis, right_axis]:
             for i in range(len(axis)):
                 if abs(axis[i]) < .2:
                     axis[i] = 0
 
         if self.right_trigger > .5:
-            euler_angles = [
-                np.interp(left_axis[0], [-1, 1], [-.8, .8]),
-                np.interp(left_axis[1], [-1, 1], [-.8, .8]),
-                np.interp(right_axis[0], [-1, 1], [-.8, .8])
-            ]
+            euler_angles = robot_ik.rotation.as_euler("XYZ", degrees=False)
+            euler_angles += np.array([
+                np.interp(left_axis[0], [-1, 1], [-.4, .4]),
+                np.interp(left_axis[1], [-1, 1], [-.4, .4]),
+                np.interp(right_axis[0], [-1, 1], [-.4, .4])
+            ])
             robot_ik.rotation = Rotation.from_euler("XYZ", euler_angles, degrees=False)
         elif self.left_trigger > .5:
-            robot_ik.translation = np.array([
-                np.interp(-left_axis[1], [-1, 1], [-.08, .08]) - 0.04,
+            robot_ik.translation += np.array([
+                np.interp(-left_axis[1], [-1, 1], [-.08, .08]),
                 np.interp(left_axis[0], [-1, 1], [-.1, .1]),
-                np.interp(right_axis[1], [-1, 1], [-.1, .1]) + 0.015
+                np.interp(right_axis[1], [-1, 1], [-.1, .1])
             ])
         else:
             velocity_frac = np.linalg.norm(left_axis)
             lateral_angle = math.atan2(left_axis[0], left_axis[1])
-            robot_gait.target_speed = np.interp(velocity_frac, [-1, 1], [-.5, .5])
-            robot_gait.lateral_rotation_angle = lateral_angle
-            robot_gait.yaw_rate = np.interp(right_axis[0], [-1, 1], [-.5, .5])
+            robot_gait.target_speed = np.interp(velocity_frac, [-1, 1], [-.3, .3])
+            robot_gait.lateral_rotation_angle = -lateral_angle
+            robot_gait.yaw_rate = -np.interp(right_axis[0], [-1, 1], [-.1, .1])
 
 
