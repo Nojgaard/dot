@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Callable, Self
 import numpy as np
 import time
+from scipy.spatial.transform import Rotation
 
 from dot.real import packet
 from dot.real.comm import Comm
@@ -31,7 +32,8 @@ class RobotController:
             # 0.135,
             self.robot_specs.arm_length,
             self.robot_specs.wrist_length,
-            translation=np.array([-0.04, 0, 0]),
+            translation=np.array([-0.03, 0, 0.02]),
+            rotation=Rotation.from_euler("XYZ", [0, -0.08, 0], degrees=False)
         )
         self.robot_gait = Gait(self.robot_ik.foot_points)
 

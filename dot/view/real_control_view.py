@@ -10,8 +10,8 @@ from scipy.spatial.transform import Rotation
 async def main():
     controller = await RobotController.create()
     controller.servo_driver.load_calibration("data/calibration.json")
-    controller.robot_gait.swing_time = 0.20
-    controller.robot_gait.clearance_height = 0.035
+    #controller.robot_gait.swing_time = 0.20
+    #controller.robot_gait.clearance_height = 0.035
 
     gui = ControlGui(controller.robot_ik, controller.robot_gait, show_open_loop=False)
 

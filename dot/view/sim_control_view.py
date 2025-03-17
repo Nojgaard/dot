@@ -15,6 +15,7 @@ from dot.sim.environments import ArenaType, LearningEnvironment, modulate_gait_e
 
 def create_mujoco_viewer(env: LearningEnvironment, gui: ControlGui):
     action_spec = env.action_spec()
+    robot: Quadruped = env.task.model
     robot_ik: RobotIK = env.task.model_ik
     robot_gait: Gait = env.task.model_gait
 
@@ -22,7 +23,7 @@ def create_mujoco_viewer(env: LearningEnvironment, gui: ControlGui):
     def update_gui(time_step):
         gui.update(modulate_gait_task=task)
         action = np.zeros(action_spec.shape)
-        print("reward:", time_step.reward)
+        #print("reward:", time_step.reward)
         # print(time_step.observation)
         # print(f"TIME {model_gait._time}")
         return action

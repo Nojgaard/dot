@@ -56,7 +56,7 @@
                         <joint name="motor_front_left_wrist" pos="0.13355 0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="flw" mass="0.1" />
-                        <geom rgba="0.6 0.6 0.6 1" mesh="flf" mass="0.01" friction="10.0 0.3 0.3"
+                        <geom rgba="0.6 0.6 0.6 1" mesh="flf" mass="0.01" friction="1.0 0.3 0.3"
                             name="front_left_foot_geom" />
                     </body>
                 </body>
@@ -77,7 +77,7 @@
                         <joint name="motor_front_right_wrist" pos="0.13355 -0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="frw" mass="0.1" />
-                        <geom rgba="0.6 0.6 0.6 1" mesh="frf" mass="0.01" friction="10.0 0.3 0.3" />
+                        <geom rgba="0.6 0.6 0.6 1" mesh="frf" mass="0.01" friction="1.0 0.3 0.3" />
                     </body>
                 </body>
             </body>
@@ -97,7 +97,7 @@
                         <joint name="motor_rear_left_wrist" pos="-0.07655 0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="rlw" mass="0.1" />
-                        <geom rgba="0.6 0.6 0.6 1" mesh="rlf" mass="0.01" friction="10.0 0.3 0.3" />
+                        <geom rgba="0.6 0.6 0.6 1" mesh="rlf" mass="0.01" friction="1.0 0.3 0.3" />
                     </body>
                 </body>
             </body>
@@ -117,7 +117,7 @@
                         <joint name="motor_rear_right_wrist" pos="-0.07655 -0.09865 -0.1006"
                             axis="0 1 0" range="-2.59 0.1" />
                         <geom rgba="0.1 0.1 0.1 1" mesh="rrw" mass="0.1" />
-                        <geom rgba="0.6 0.6 0.6 1" mesh="rrf" mass="0.01" friction="10.0 0.3 0.3" />
+                        <geom rgba="0.6 0.6 0.6 1" mesh="rrf" mass="0.01" friction="1.0 0.3 0.3" />
                     </body>
                 </body>
             </body>

@@ -48,6 +48,11 @@ class Robot(Entity):
         framequat_element = self.mjcf_model.sensor.framequat
         quat = physics.bind(framequat_element).sensordata
         return quat_to_euler(quat)[:2]
+    
+    def joint_velocities(self, physics: Physics):
+        joints = self.mjcf_model.find_all("joint")
+        qvel = physics.bind(joints).qvel
+        return qvel
 
     @property
     def observables(self) -> "RobotObservables":

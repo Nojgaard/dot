@@ -17,6 +17,7 @@ class GaitGui:
             gait.clearance_height,
             gait.penetration_depth,
             gait.swing_time,
+            gait._stance_time
         ) = dpg.get_values(
             [
                 self._velocity,
@@ -25,6 +26,7 @@ class GaitGui:
                 self._clearance,
                 self._penetration,
                 self._swing_time,
+                self._stance_time
             ]
         )
 
@@ -71,6 +73,13 @@ class GaitGui:
                 default_value=gait.swing_time,
                 min_value=0.1,
                 max_value=0.5,
+            )
+
+            self._stance_time = dpg.add_slider_float(
+                label="Stance time",
+                default_value=gait._stance_time,
+                min_value=0.1,
+                max_value=1.0,
             )
 
 

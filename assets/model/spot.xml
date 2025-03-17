@@ -1,4 +1,4 @@
-<mujoco model="spot">
+<mujoco model="dot">
   <compiler angle="radian" />
   <asset>
     <mesh name="mainbody" file="stl/mainbody.stl" scale="0.001 0.001 0.001" />
@@ -36,15 +36,15 @@
           actuatorfrcrange="-100 100" />
         <geom mass="0.1" pos="0.135 0.02 -0.01"  type="mesh" rgba="0.1 0.1 0.1 1"
           mesh="lshoulder" />
-        <body name="front_left_leg_link" pos="0 0.052 0">
-          <joint name="motor_front_left_leg" pos="0 0 0" axis="0 1 0" range="-0.97 2.17"
+        <body name="front_left_arm_link" pos="0 0.052 0">
+          <joint name="motor_front_left_arm" pos="0 0 0" axis="0 1 0" range="-0.97 2.17"
             actuatorfrcrange="-100 100" />
           <geom mass="0.1" pos="0.125 -0.04 -0.02"  type="mesh" rgba="0.1 0.1 0.1 1"
             mesh="larm" />
           <geom pos="0.125 -0.04 -0.02"  type="mesh" rgba="0.92 0.83 0 1"
             mesh="larm_cover" />
-          <body name="front_left_foot_link" pos="0.01 0 -0.12">
-            <joint name="foot_motor_front_left" pos="0 0 0" axis="0 1 0" range="-2.59 0.1"
+          <body name="front_left_wrist_link" pos="0.01 0 -0.12">
+            <joint name="motor_front_left_wrist" pos="0 0 0" axis="0 1 0" range="-2.59 0.1"
               actuatorfrcrange="-100 100" />
             <geom mass="0.105" pos="0.12 -0.04 0.1" type="mesh" rgba="0.1 0.1 0.1 1" mesh="lfoot" />
             <geom name="front_left_foot_mesh" pos="0 -0.01 -0.115" quat="0.980057 0 0.198718 0" type="mesh"
@@ -56,14 +56,14 @@
         <joint name="motor_front_right_shoulder" pos="0 0 0" axis="1 0 0" range="-1 1" />
         <geom pos="0.135 0.09 -0.01"  type="mesh" mass="0.1" rgba="0.1 0.1 0.1 1"
           mesh="rshoulder" />
-        <body name="front_right_leg_link" pos="0 -0.052 0">
-          <joint name="motor_front_right_leg" pos="0 0 0" axis="0 1 0" range="-0.97 2.17"
+        <body name="front_right_arm_link" pos="0 -0.052 0">
+          <joint name="motor_front_right_arm" pos="0 0 0" axis="0 1 0" range="-0.97 2.17"
             actuatorfrcrange="-100 100" />
           <geom pos="0.125 0.15 -0.02" mass="0.1" type="mesh" rgba="0.1 0.1 0.1 1" mesh="rarm" />
           <geom pos="0.125 0.15 -0.02" type="mesh" contype="0" rgba="0.92 0.83 0 1"
             mesh="rarm_cover" />
-          <body name="front_right_foot_link" pos="0.01 0 -0.12">
-            <joint name="foot_motor_front_right" pos="0 0 0" axis="0 1 0" range="-2.59 0.1" />
+          <body name="front_right_wrist_link" pos="0.01 0 -0.12">
+            <joint name="motor_wrist_front_right" pos="0 0 0" axis="0 1 0" range="-2.59 0.1" />
             <geom pos="0.12 0.15 0.1"  type="mesh" mass="0.105" rgba="0.1 0.1 0.1 1"
               mesh="rfoot" />
             <geom pos="0 -0.01 -0.115" quat="0.980057 0 0.198718 0" type="mesh"
@@ -75,14 +75,14 @@
         <joint name="motor_rear_left_shoulder" pos="0 0 0" axis="1 0 0" range="-1 1" />
         <geom mass="0.1" pos="0.135 0.02 -0.01"  type="mesh" rgba="0.1 0.1 0.1 1"
           mesh="lshoulder" />
-        <body name="rear_left_leg_link" pos="0 0.052 0">
-          <joint name="motor_rear_left_leg" pos="0 0 0" axis="0 1 0" range="-0.97 2.17" />
+        <body name="rear_left_arm_link" pos="0 0.052 0">
+          <joint name="motor_rear_left_arm" pos="0 0 0" axis="0 1 0" range="-0.97 2.17" />
           <geom mass="0.1" pos="0.125 -0.04 -0.02"  type="mesh" rgba="0.1 0.1 0.1 1"
             mesh="larm" />
           <geom pos="0.125 -0.04 -0.02"  type="mesh" rgba="0.92 0.83 0 1"
             mesh="larm_cover" />
-          <body name="rear_left_foot_link" pos="0.01 0 -0.12">
-            <joint name="foot_motor_rear_left" pos="0 0 0" axis="0 1 0" range="-2.59 0.1" />
+          <body name="rear_left_wrist_link" pos="0.01 0 -0.12">
+            <joint name="motor_wrist_rear_left" pos="0 0 0" axis="0 1 0" range="-2.59 0.1" />
             <geom mass="0.105" pos="0.12 -0.04 0.1" type="mesh" rgba="0.1 0.1 0.1 1" mesh="lfoot" />
             <geom pos="0 -0.01 -0.115" quat="0.980057 0 0.198718 0" type="mesh"
               rgba="0.6 0.6 0.6 1" mesh="foot" friction="10.0 0.3 0.3" />
@@ -93,13 +93,13 @@
         <joint name="motor_rear_right_shoulder" pos="0 0 0" axis="1 0 0" range="-1 1" />
         <geom mass="0.1" pos="0.135 0.09 -0.01"  type="mesh" rgba="0.1 0.1 0.1 1"
           mesh="rshoulder" />
-        <body name="rear_right_leg_link" pos="0 -0.052 0">
-          <joint name="motor_rear_right_leg" pos="0 0 0" axis="0 1 0" range="-0.97 2.17" />
+        <body name="rear_right_arm_link" pos="0 -0.052 0">
+          <joint name="motor_rear_right_arm" pos="0 0 0" axis="0 1 0" range="-0.97 2.17" />
           <geom mass="0.1" pos="0.125 0.15 -0.02" type="mesh" rgba="0.1 0.1 0.1 1" mesh="rarm" />
           <geom pos="0.125 0.15 -0.02" type="mesh" contype="0" rgba="0.92 0.83 0 1"
             mesh="rarm_cover" />
-          <body name="rear_right_foot_link" pos="0.01 0 -0.12">
-            <joint name="foot_motor_rear_right" pos="0 0 0" axis="0 1 0" range="-2.59 0.1" />
+          <body name="rear_right_wrist_link" pos="0.01 0 -0.12">
+            <joint name="motor_wrist_rear_right" pos="0 0 0" axis="0 1 0" range="-2.59 0.1" />
             <geom mass="0.105" pos="0.12 0.15 0.1"  type="mesh" rgba="0.1 0.1 0.1 1"
               mesh="rfoot" />
             <geom pos="0 -0.01 -0.115" quat="0.980057 0 0.198718 0" type="mesh"
@@ -112,10 +112,10 @@
   </worldbody>
 
   <contact>
-    <exclude body1="base" body2="front_left_leg_link" />
-    <exclude body1="base" body2="front_right_leg_link" />
-    <exclude body1="base" body2="rear_left_leg_link" />
-    <exclude body1="base" body2="rear_right_leg_link" />
+    <exclude body1="base" body2="front_left_arm_link" />
+    <exclude body1="base" body2="front_right_arm_link" />
+    <exclude body1="base" body2="rear_left_arm_link" />
+    <exclude body1="base" body2="rear_right_arm_link" />
   </contact>
   <sensor>
     <framequat name="imu_quat" objtype="site" objname="imu" />

@@ -13,6 +13,7 @@ from dot.sim.modulate_gait_task import ModulateGaitTask
 from dot.sim.quadruped import Quadruped
 from dot.sim.robot import Robot
 from dm_control.locomotion.arenas import floors
+from scipy.spatial.transform import Rotation
 
 
 def _scale_action(action: np.ndarray, spec: specs.Array):
@@ -148,7 +149,8 @@ def modulate_gait_env(
         model.hip_offset,
         model.arm_length,
         model.wrist_length,
-        translation=np.array([-0.04, 0, 0]),
+        translation=np.array([-0.03, 0, 0.02]),
+        rotation=Rotation.from_euler("XYZ", [0, -0.08, 0], degrees=False)
     )
     model_gait = Gait(model_ik.foot_points)
     input_controller = GaitInputController(model_gait, time_per_mode=time_per_mode)
