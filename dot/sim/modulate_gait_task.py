@@ -148,7 +148,6 @@ class ModulateGaitTask(Task):
         linear_velocity = self.model.linear_velocity(physics)
         angular_velocity = self.model.angular_velocity(physics)
         actions = self._last_actions
-        print(f"{np.rad2deg(np.max(np.abs(self.model.joint_velocities(physics)))):.2f}")
 
         joints = self.model.mjcf_model.find_all("joint")
         joint_forces = physics.data.actuator_force
