@@ -3,10 +3,11 @@
 
 void ServoController::begin() { _device.begin(); }
 
-void ServoController::setCalibration(float degreesPerSecond,
+void ServoController::setCalibration(float degreesPerSecond, float smoothingScalar,
                                      int* minMicroseconds, int* maxMicroseconds,
                                      int* maxAngles) {
-  _degreesPerSecond = degreesPerSecond;
+  _degreesPerSecond = max(degreesPerSecond, 0.0f);
+  _smoothingScalar = max(smoothingScalar, 0.0f);
 
   for (int i = 0; i < Specs::NUM_SERVOS; i++) {
     _servos[i].minMicroseconds = minMicroseconds[i];
@@ -62,12 +63,22 @@ void ServoController::setTargetAngle(float* targetAngles) {
   }
 }
 
+float delta_angle_linear(float target, float current, float maxDeltaAngle) {
+  float error = target - current;
+  float dangle = min(abs(error), maxDeltaAngle);
+  return error >= 0 ? dangle : -dangle;
+}
+
+float delta_angle_smoothed(float target, float current, float scalar) {
+  return (target * (1 - scalar) + current * scalar) - current;
+}
+
 void ServoController::actuate(float dt) {
-  if (!hasCalibration()) {
+  if (!hasCalibration() || dt <= 0.0) {
     return;
   }
-  
-  float dangle = dt * _degreesPerSecond;
+  float deltaMaxAngle = dt * _degreesPerSecond;
+  float smoothFactor = 1.0 - exp(-(double)_smoothingScalar * (double)dt);
   for (int i = 0; i < Specs::NUM_SERVOS; i++) {
     ServoData& servo = _servos[i];
     if (servo.targetAngle < 0 || abs(servo.targetAngle - servo.currentAngle) < 0.01) {
@@ -77,9 +88,9 @@ void ServoController::actuate(float dt) {
     if (servo.currentAngle < 0) {
         servo.currentAngle = servo.targetAngle;
     } else {
-        float error = servo.targetAngle - servo.currentAngle;
-        float dangleConstrained = min(abs(error), dangle);
-        servo.currentAngle += error >= 0 ? dangleConstrained : -dangleConstrained;
+      float dlinear = delta_angle_linear(servo.targetAngle, servo.currentAngle, deltaMaxAngle);
+      float dsmooth = delta_angle_smoothed(servo.targetAngle, servo.currentAngle, smoothFactor);
+      servo.currentAngle += abs(dlinear) < abs(dsmooth) ? dlinear : dsmooth;
     }
 
     int microseconds = round(servo.currentAngle * servo.slope + servo.minMicroseconds);
@@ -87,6 +98,8 @@ void ServoController::actuate(float dt) {
     _device.writeMicroSeconds(i, microseconds);
   }
 }
+
+float ServoController::getCurrentAngle(int servoId) const { return _servos[servoId].currentAngle; }
 
 void ServoController::detach() {
     _device.detach();

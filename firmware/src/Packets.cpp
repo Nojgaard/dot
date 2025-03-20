@@ -34,8 +34,9 @@ void readServoTargetAnglePacket(ServoTargetAnglePacket& packet,
 
 void readServoCalibrationPacket(ServoCalibrationPacket& packet,
                                 RobotIO& robotIO) {
-  robotIO.servo.setCalibration(packet.degreesPerSecond, packet.minMicroseconds,
-                               packet.maxMicroSeconds, packet.maxAngles);
+  robotIO.servo.setCalibration(packet.degreesPerSecond, packet.smoothingScalar,
+                               packet.minMicroseconds, packet.maxMicroSeconds,
+                               packet.maxAngles);
   robotIO.servo.printCalibration();
 }
 

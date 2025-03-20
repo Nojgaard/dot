@@ -16,6 +16,7 @@ struct ServoTargetAnglePacket {
 
 struct ServoCalibrationPacket {
   float degreesPerSecond;
+  float smoothingScalar;
   int minMicroseconds[Specs::NUM_SERVOS];
   int maxMicroSeconds[Specs::NUM_SERVOS];
   int maxAngles[Specs::NUM_SERVOS];

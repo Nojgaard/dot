@@ -12,7 +12,8 @@ class ServoDriver:
     @dataclass
     class Calibration:
         num_servos = 12
-        degreesPerSecond = 180
+        degreesPerSecond = 300
+        smoothingFactor = 4000
         bounds_pwm_ms = [(500, 2500) for _ in range(12)]
         bounds_servo_angle = (0, 180)
         invert_servo_angle = [False] * 12
@@ -91,6 +92,7 @@ class ServoDriver:
         ]
         data = packet.servo_calibration_packet(
             self.calibration.degreesPerSecond,
+            self.calibration.smoothingFactor,
             min_microseconds,
             max_microseconds,
             max_servo_angles,

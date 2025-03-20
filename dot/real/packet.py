@@ -75,15 +75,17 @@ def servo_target_angle_packet(target_angles: list[float]) -> bytes:
 
 def servo_calibration_packet(
     degreesPerSecond: float,
+    smoothingFactor: float,
     min_microseconds: list[int],
     max_microseconds: list[int],
     max_servo_angles: list[int],
 ):
     packet_type = PacketType.SERVO_CALIBRATION.value
     data = struct.pack(
-        "bf36i",
+        "bff36i",
         packet_type,
         degreesPerSecond,
+        smoothingFactor,
         *min_microseconds,
         *max_microseconds,
         *max_servo_angles

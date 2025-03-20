@@ -26,16 +26,14 @@ void updateSensorState() {
   robotIO.imu.read(telemetry.orientation, telemetry.acceleration);
   telemetry.statusIMU = robotIO.imu.deviceStatus();
   telemetry.statusServo = robotIO.servo.deviceStatus();
-  //Serial.println(telemetry.batteryVoltage);
-  //Serial.println(telemetry.batteryCurrent);
 }
 
 void loop() {
   long currentLoopMs = millis();
   float dt = (currentLoopMs - lastLoopMs) / 1000.0;
-  long dtMillis = (currentLoopMs - lastLoopMs);
   lastLoopMs = currentLoopMs;
-
+  if (dt <= 0.0) { return; }
+  
   updateSensorState();
   comm.sendSensorState(telemetry);
 
@@ -47,5 +45,10 @@ void loop() {
   }
 
   robotIO.servo.actuate(dt);
-
+  /*if ((currentLoopMs - lastPrintMs) > 10) {
+    lastPrintMs = currentLoopMs;
+    Serial.print("0, ");
+    Serial.print("180, ");
+    Serial.println(robotIO.servo.getCurrentAngle(0));
+  }*/
 }
