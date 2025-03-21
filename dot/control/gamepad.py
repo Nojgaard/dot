@@ -10,6 +10,7 @@ import inputs
 import math
 import threading
 
+
 class Gamepad:
     MAX_TRIG_VAL = math.pow(2, 8)
     MAX_HAT_VAL = math.pow(2, 15)
@@ -37,87 +38,67 @@ class Gamepad:
         self.down_dpad = 0
 
         if len(inputs.devices.gamepads) > 0:
-            self._monitor_thread = threading.Thread(target=self._monitor_controller, args=())
+            self._monitor_thread = threading.Thread(
+                target=self._monitor_controller, args=()
+            )
             self._monitor_thread.daemon = True
             self._monitor_thread.start()
         else:
             print("No gamepad detected.")
 
-
     def _monitor_controller(self):
         while True:
             events = inputs.get_gamepad()
             for event in events:
-                if event.code == 'ABS_Y':
-                    self.left_hat_y = event.state / Gamepad.MAX_HAT_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_X':
-                    self.left_hat_x = event.state / Gamepad.MAX_HAT_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_RY':
-                    self.right_hat_y = event.state / Gamepad.MAX_HAT_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_RX':
-                    self.right_hat_x = event.state / Gamepad.MAX_HAT_VAL # normalize between -1 and 1
-                elif event.code == 'ABS_Z':
-                    self.left_trigger = event.state / Gamepad.MAX_TRIG_VAL # normalize between 0 and 1
-                elif event.code == 'ABS_RZ':
-                    self.right_trigger = event.state / Gamepad.MAX_TRIG_VAL # normalize between 0 and 1
-                elif event.code == 'BTN_TL':
+                if event.code == "ABS_Y":
+                    self.left_hat_y = (
+                        event.state / Gamepad.MAX_HAT_VAL
+                    )  # normalize between -1 and 1
+                elif event.code == "ABS_X":
+                    self.left_hat_x = (
+                        event.state / Gamepad.MAX_HAT_VAL
+                    )  # normalize between -1 and 1
+                elif event.code == "ABS_RY":
+                    self.right_hat_y = (
+                        event.state / Gamepad.MAX_HAT_VAL
+                    )  # normalize between -1 and 1
+                elif event.code == "ABS_RX":
+                    self.right_hat_x = (
+                        event.state / Gamepad.MAX_HAT_VAL
+                    )  # normalize between -1 and 1
+                elif event.code == "ABS_Z":
+                    self.left_trigger = (
+                        event.state / Gamepad.MAX_TRIG_VAL
+                    )  # normalize between 0 and 1
+                elif event.code == "ABS_RZ":
+                    self.right_trigger = (
+                        event.state / Gamepad.MAX_TRIG_VAL
+                    )  # normalize between 0 and 1
+                elif event.code == "BTN_TL":
                     self.left_bumper = event.state
-                elif event.code == 'BTN_TR':
+                elif event.code == "BTN_TR":
                     self.right_bumper = event.state
-                elif event.code == 'BTN_SOUTH':
+                elif event.code == "BTN_SOUTH":
                     self.a = event.state
-                elif event.code == 'BTN_NORTH':
-                    self.y = event.state #previously switched with X
-                elif event.code == 'BTN_WEST':
-                    self.x = event.state #previously switched with Y
-                elif event.code == 'BTN_EAST':
+                elif event.code == "BTN_NORTH":
+                    self.y = event.state  # previously switched with X
+                elif event.code == "BTN_WEST":
+                    self.x = event.state  # previously switched with Y
+                elif event.code == "BTN_EAST":
                     self.b = event.state
-                elif event.code == 'BTN_THUMBL':
+                elif event.code == "BTN_THUMBL":
                     self.left_thumb = event.state
-                elif event.code == 'BTN_THUMBR':
+                elif event.code == "BTN_THUMBR":
                     self.right_thumb = event.state
-                elif event.code == 'BTN_SELECT':
+                elif event.code == "BTN_SELECT":
                     self.back = event.state
-                elif event.code == 'BTN_START':
+                elif event.code == "BTN_START":
                     self.start = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY1':
+                elif event.code == "BTN_TRIGGER_HAPPY1":
                     self.left_dpad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY2':
+                elif event.code == "BTN_TRIGGER_HAPPY2":
                     self.right_dpad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY3':
+                elif event.code == "BTN_TRIGGER_HAPPY3":
                     self.up_dpad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY4':
+                elif event.code == "BTN_TRIGGER_HAPPY4":
                     self.down_dpad = event.state
-
-    def update_robot_inputs(self, robot_ik: RobotIK, robot_gait: Gait):
-        left_axis = np.array([self.left_hat_x, self.left_hat_y])
-        right_axis = np.array([self.right_hat_x, self.right_hat_y])
-        for axis in [left_axis, right_axis]:
-            for i in range(len(axis)):
-                if abs(axis[i]) < .2:
-                    axis[i] = 0
-                else:
-                    axis[i] += -0.2 if axis[i] > 0 else 0.2
-
-        if self.right_trigger > .5:
-            euler_angles = robot_ik.rotation.as_euler("XYZ", degrees=False)
-            euler_angles += np.array([
-                np.interp(left_axis[0], [-.8, .8], [-.4, .4]),
-                np.interp(left_axis[1], [-.8, .8], [-.5, .5]),
-                np.interp(right_axis[0], [-.8, .8], [-.4, .4])
-            ])
-            robot_ik.rotation = Rotation.from_euler("XYZ", euler_angles, degrees=False)
-        elif self.left_trigger > .5:
-            robot_ik.translation += np.array([
-                np.interp(-left_axis[1], [-.8, .8], [-.03, .03]),
-                np.interp(left_axis[0], [-.8, .8], [-.05, .05]),
-                -np.interp(right_axis[1], [-.8, .8], [-.07, .07])
-            ])
-        else:
-            velocity_frac = np.linalg.norm(left_axis)
-            lateral_angle = math.atan2(left_axis[0], left_axis[1])
-            robot_gait.target_speed = np.interp(velocity_frac, [-1, 1], [-.15, .15])
-            robot_gait.lateral_rotation_angle = -lateral_angle
-            robot_gait.yaw_rate = -np.interp(right_axis[0], [-1, 1], [-.06, .06])
-
-

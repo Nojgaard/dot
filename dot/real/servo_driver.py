@@ -12,8 +12,8 @@ class ServoDriver:
     @dataclass
     class Calibration:
         num_servos = 12
-        degreesPerSecond = 300
-        smoothingFactor = 4000
+        degreesPerSecond = 200
+        smoothingFactor = 100
         bounds_pwm_ms = [(500, 2500) for _ in range(12)]
         bounds_servo_angle = (0, 180)
         invert_servo_angle = [False] * 12
