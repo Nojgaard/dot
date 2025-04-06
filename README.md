@@ -1,0 +1,1 @@
+Yet another quadruped framework. Simulates a quadruped using the mujoco framework with the intention of using reinforcement learning to optimize the gait of the quadruped. Furthermore provides software and firmware that can use the gait used for simulations directly on real hardware using udp.
